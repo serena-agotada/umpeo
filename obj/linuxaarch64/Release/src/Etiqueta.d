@@ -1,6 +1,6 @@
-obj/linuxaarch64/Release/src/ofApp.o: \
- /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/ofApp.cpp \
- /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/ofApp.h \
+obj/linuxaarch64/Release/src/Etiqueta.o: \
+ /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/Etiqueta.cpp \
+ /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/Etiqueta.h \
  /home/sara/openFrameworks/libs/openFrameworks/ofMain.h \
  /home/sara/openFrameworks/libs/openFrameworks/utils/ofConstants.h \
  /home/sara/openFrameworks/libs/tess2/include/tesselator.h \
@@ -318,26 +318,8 @@ obj/linuxaarch64/Release/src/ofApp.o: \
  /home/sara/openFrameworks/libs/openFrameworks/video/ofVideoPlayer.h \
  /home/sara/openFrameworks/libs/openFrameworks/3d/of3dUtils.h \
  /home/sara/openFrameworks/libs/openFrameworks/3d/ofCamera.h \
- /home/sara/openFrameworks/libs/openFrameworks/3d/ofEasyCam.h \
- /home/sara/openFrameworks/addons/ofxOsc/src/ofxOsc.h \
- /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscArg.h \
- /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscMessage.h \
- /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscSender.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscOutboundPacketStream.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscException.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/UdpSocket.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/NetworkingUtils.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/IpEndpointName.h \
- /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscBundle.h \
- /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscReceiver.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h \
- /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/Etiqueta.h \
- /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/RectEtiqueta.h
-/home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/ofApp.h:
+ /home/sara/openFrameworks/libs/openFrameworks/3d/ofEasyCam.h
+/home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/Etiqueta.h:
 /home/sara/openFrameworks/libs/openFrameworks/ofMain.h:
 /home/sara/openFrameworks/libs/openFrameworks/utils/ofConstants.h:
 /home/sara/openFrameworks/libs/tess2/include/tesselator.h:
@@ -657,21 +639,3 @@ obj/linuxaarch64/Release/src/ofApp.o: \
 /home/sara/openFrameworks/libs/openFrameworks/3d/of3dUtils.h:
 /home/sara/openFrameworks/libs/openFrameworks/3d/ofCamera.h:
 /home/sara/openFrameworks/libs/openFrameworks/3d/ofEasyCam.h:
-/home/sara/openFrameworks/addons/ofxOsc/src/ofxOsc.h:
-/home/sara/openFrameworks/addons/ofxOsc/src/ofxOscArg.h:
-/home/sara/openFrameworks/addons/ofxOsc/src/ofxOscMessage.h:
-/home/sara/openFrameworks/addons/ofxOsc/src/ofxOscSender.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscOutboundPacketStream.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscException.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/UdpSocket.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/NetworkingUtils.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/IpEndpointName.h:
-/home/sara/openFrameworks/addons/ofxOsc/src/ofxOscBundle.h:
-/home/sara/openFrameworks/addons/ofxOsc/src/ofxOscReceiver.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h:
-/home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h:
-/home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/Etiqueta.h:
-/home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/RectEtiqueta.h:

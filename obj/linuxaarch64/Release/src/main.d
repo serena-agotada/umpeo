@@ -1,5 +1,5 @@
 obj/linuxaarch64/Release/src/main.o: \
- /home/sara/openFrameworks/apps/myApps/umpeo-videos-002/src/main.cpp \
+ /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/main.cpp \
  /home/sara/openFrameworks/libs/openFrameworks/ofMain.h \
  /home/sara/openFrameworks/libs/openFrameworks/utils/ofConstants.h \
  /home/sara/openFrameworks/libs/tess2/include/tesselator.h \
@@ -318,7 +318,7 @@ obj/linuxaarch64/Release/src/main.o: \
  /home/sara/openFrameworks/libs/openFrameworks/3d/of3dUtils.h \
  /home/sara/openFrameworks/libs/openFrameworks/3d/ofCamera.h \
  /home/sara/openFrameworks/libs/openFrameworks/3d/ofEasyCam.h \
- /home/sara/openFrameworks/apps/myApps/umpeo-videos-002/src/ofApp.h \
+ /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/ofApp.h \
  /home/sara/openFrameworks/addons/ofxOsc/src/ofxOsc.h \
  /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscArg.h \
  /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscMessage.h \
@@ -334,7 +334,9 @@ obj/linuxaarch64/Release/src/main.o: \
  /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscReceiver.h \
  /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h \
  /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h \
- /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h
+ /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h \
+ /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/Etiqueta.h \
+ /home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/RectEtiqueta.h
 /home/sara/openFrameworks/libs/openFrameworks/ofMain.h:
 /home/sara/openFrameworks/libs/openFrameworks/utils/ofConstants.h:
 /home/sara/openFrameworks/libs/tess2/include/tesselator.h:
@@ -654,7 +656,7 @@ obj/linuxaarch64/Release/src/main.o: \
 /home/sara/openFrameworks/libs/openFrameworks/3d/of3dUtils.h:
 /home/sara/openFrameworks/libs/openFrameworks/3d/ofCamera.h:
 /home/sara/openFrameworks/libs/openFrameworks/3d/ofEasyCam.h:
-/home/sara/openFrameworks/apps/myApps/umpeo-videos-002/src/ofApp.h:
+/home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/ofApp.h:
 /home/sara/openFrameworks/addons/ofxOsc/src/ofxOsc.h:
 /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscArg.h:
 /home/sara/openFrameworks/addons/ofxOsc/src/ofxOscMessage.h:
@@ -671,3 +673,5 @@ obj/linuxaarch64/Release/src/main.o: \
 /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h:
 /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h:
 /home/sara/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h:
+/home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/Etiqueta.h:
+/home/sara/openFrameworks/apps/myApps/umpeo-repo-2/src/RectEtiqueta.h:

@@ -2,6 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxOsc.h"
+#include "Etiqueta.h"
+#include "RectEtiqueta.h"
 
 // send host (aka ip address)
 #define HOST "localhost"
@@ -19,7 +21,8 @@ class ofApp : public ofBaseApp{
 		void exit();
 		
 		void applyGlitchEffect();
-		void audioOut(ofSoundBuffer &buffer);
+		void dibujarEtiquetas(int x, int y, int w, int h);
+		void dibujarBarraProgreso(int xx, int yy, float porcentaje);
 		
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -41,7 +44,6 @@ class ofApp : public ofBaseApp{
 		vector<string>		videoFiles;  // Declaración del vector para los nombres de los videos
 		vector<float> videoPositions; // Ultima posición de cada video
 		ofVideoPlayer		videoPlayer;  // Objeto de ofVideoPlayer para reproducir los videos
-		ofSoundStream soundStream;
 		int currentVideoIndex;      // Índice para saber qué video se está reproduciendo
 		int newIndex; // Indice para calcular nuevo video
 		bool shouldSetPosition;
@@ -59,11 +61,15 @@ class ofApp : public ofBaseApp{
 		string textoDerecha;
 		int offsetVideoPosX;
 		int offsetVideoPosY;
+		int dist_dial;
 		int tam_dial;
-		
-		// VARIABLES PARA REPRODUCTOR
+		vector<Etiqueta> etiquetasVideos[59];
+		RectEtiqueta grilla[52][18];
+		int i_etiqueta;
+		float pos_prox_etiqueta;
+		ofColor colores_etiquetas[100];
+		vector<string> displayEtiquetas;
+
 		ofxOscReceiver receiver;
-
-
 };
 
