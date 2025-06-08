@@ -163,7 +163,6 @@ void ofApp::setup(){
 	
 }
 
-
 //--------------------------------------------------------------
 void ofApp::update(){
     
@@ -370,14 +369,14 @@ void ofApp::draw(){
 	
 	ofSetColor(255);
 	ofDrawBitmapString("Reproduccion: " + ofToString((int)ofGetFrameRate()) , 20, offsetVideoPosY);
-	ofDrawBitmapString("Actividad:", 20, offsetVideoPosY+20);
+	ofDrawBitmapString("Actividad:" + ofToString(ofMap(oscuridad, 0, 240, 100, 0, true)) + "%" , 20, offsetVideoPosY+20);
 	
-	dibujarBarraProgreso(20, offsetVideoPosY+25, ofMap(oscuridad, 0, 240, 100, 0, true));
+	//dibujarBarraProgreso(20, offsetVideoPosY+25, ofMap(oscuridad, 0, 240, 100, 0, true));
 	
 	ofSetColor(255);
-	ofDrawBitmapString("Archivo recuperado:", 20, offsetVideoPosY+60);
+	ofDrawBitmapString("Archivo recuperado:" + ofToString(ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, offsetVideoPosY+60);
 	
-	dibujarBarraProgreso(20, offsetVideoPosY+65, ofMap(distortionAmount, 0, 1, 100, 0, true));
+	//dibujarBarraProgreso(20, offsetVideoPosY+65, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
 	ofSetColor(255);
 	//ofDrawBitmapString("Memoria recuperada: " + string(videoPlayer.isLoaded() ? "SI" : "NO"), 20, offsetVideoPosY+100);
@@ -452,116 +451,130 @@ void ofApp::dibujarEtiquetas(int xx, int yy, int w, int h){
 // --------------------------------------------------------------------------------------------------------
 void ofApp::applyGlitchEffect() {
     ofClear(0, 0, 0, 255);
-    ofSetColor(255); // Resetear color a blanco
+    ofSetColor(255);
 	
     textoDerecha = "ERRORES\n";
-    
-    // Efecto base - cuanto mayor distortionAmount, más probable es que falle
-    if(ofRandomuf() > distortionAmount * 0.0f) {
+
+    // Dibujar frame base con una pequeña chance de fallar
+    if(ofRandomuf() > distortionAmount * 0.05f) {
         videoTexture.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
         textoDerecha += "Base: 0\n";
+    } else {
+        textoDerecha += "Base: 1\n";
     }
-    else{
-		 textoDerecha += "Base: 1\n";
-	}
 
-    // 1. Efecto de corrupción digital extrema cuando distortionAmount es alto
-    if(distortionAmount > 0.3f) {
-        float corruptionIntensity = ofMap(distortionAmount, 0.3f, 1.0f, 0.0f, 1.0f);
-        
-        // Distorsión de bloques (como compresión JPEG corrupta)
-        if(ofRandomuf() < corruptionIntensity * 0.4f) {
-            int blockSize = ofRandom(5, 55) * corruptionIntensity;
-            int numBlocks = ofRandom(1, 25 + 60 * corruptionIntensity);
-            
-            for(int i = 0; i < numBlocks; i++) {
-                int x = ofRandom(videoPlayer.getWidth()*resizeVideo);
+    if(distortionAmount > 0.4f) {
+        float corruptionIntensity = ofMap(distortionAmount, 0.4f, 1.0f, 0.0f, 1.0f);
+
+        // --- 1. Corrupción horizontal tipo "slice" ---
+        /*if(ofRandomuf() < corruptionIntensity * 0.8f) {
+            int numSlices = 8 + 20 * corruptionIntensity;
+            for(int i = 0; i < numSlices; i++) {
                 int y = ofRandom(videoPlayer.getHeight()*resizeVideo);
-                int newX = x + ofRandom(-100, 100) * corruptionIntensity;
-                int newY = y + ofRandom(-100, 100) * corruptionIntensity;
-                
-                ofSetColor(ofRandom(255), ofRandom(255), ofRandom(255));
-                videoTexture.drawSubsection(
-                    newX, newY, 
-                    blockSize, blockSize, 
-                    x, y, 
-                    blockSize, blockSize
-                );
-            }
-             textoDerecha += "Bloques: 1\n";
-        }
-        else  textoDerecha += "Bloques: 0\n";
-        
-        // Líneas de ruido digital (como errores de lectura)
-        if(ofRandomuf() < corruptionIntensity * 0.3f) {
-            int numLines = ofRandom(1, 15 + 60 * corruptionIntensity);
-            for(int i = 0; i < numLines; i++) {
-                int y = ofRandom(videoPlayer.getHeight()*resizeVideo);
-                int height = ofRandom(1, 6 + 30 * corruptionIntensity);
-                int xOffset = ofRandom(-55, 55) * corruptionIntensity;
-                
-                ofSetColor(ofRandom(150, 255), ofRandom(150, 255), ofRandom(150, 255));
+                int h = ofRandom(ofGetHeight()/6, ofGetHeight()/2.3);
+                int xOffset = ofRandom(-180, 180) * corruptionIntensity;
+
                 videoTexture.drawSubsection(
                     xOffset, y, 
-                    videoPlayer.getWidth()*resizeVideo, height, 
+                    videoPlayer.getWidth()*resizeVideo, h, 
                     0, y, 
-                    videoPlayer.getWidth()*resizeVideo, height
+                    videoPlayer.getWidth()*resizeVideo, h
                 );
             }
-            textoDerecha += "LRD: 1\n";
-        }
-        else  textoDerecha += "LRD: 0\n";
-        
-        // Congelamiento o salto de frames (simulando error de lectura)
-        if(ofRandomuf() < corruptionIntensity * 0.1f) {
-            ofSetColor(255);
-            videoTexture.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo * ofRandom(0.6f, 1.0f));
-            ofSetColor(100);
-            ofDrawRectangle(0, videoPlayer.getHeight()*resizeVideo * ofRandom(0.6f, 1.0f), 
-                          videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
-                          
-            textoDerecha += "Lectura: 1\n";
-        }
-        else  textoDerecha += "Lectura: 0\n"; 
-    }
-    else textoDerecha += "Bloques: 0\nLRD: 0\nLectura: 0\n";
-    
-    // 2. Efectos de color y desplazamiento
-    if(distortionAmount > 0.1f) {
-        // Desplazamiento RGB (más extremo cuando distortionAmount es alto)
-        float rgbShift = 3 + 30 * powf(distortionAmount, 3);
-        
-        if(rgbShift > 1.0f) {
+            textoDerecha += "Slices: 1\n";
+        } else textoDerecha += "Slices: 0\n";*/
+
+        // --- 2. Bloques glitch con color alterado ---
+        if(ofRandomuf() < corruptionIntensity * 0.8f || corruptionIntensity > 0.8) {
+		
+            //int numBlocks = (videoPlayer.getWidth()*resizeVideo / 25) + 200 * corruptionIntensity;
+	    int sizeX = 0;
+	    int sizeY = 0;
+	    int x = 0;
+	    int alto_linea = videoPlayer.getHeight()*resizeVideo/1.5 * corruptionIntensity;
+	    int inicio_linea = ofRandom(videoPlayer.getHeight()*resizeVideo - alto_linea);
+	    int y = ofRandom(inicio_linea);
+	    
+	    ofSetColor(
+		ofRandom(200, 255), 
+		ofRandom(200, 255), 
+		ofRandom(200, 255),
+		255
+	    );
+		
+            for(int i = 0; y < videoPlayer.getHeight()*resizeVideo - 10; i++) {
+		 
+		if( y < inicio_linea || y > inicio_linea+alto_linea){
+			if( x >= videoPlayer.getWidth()*resizeVideo - 10){
+				y = y + ofRandom(5, videoPlayer.getHeight()*resizeVideo-y);
+				x = 0;
+			}
+			x = x + ofRandom(15, videoPlayer.getWidth()*resizeVideo-x);
+		}
+		// si esta dentro de la porcion corrupta
+		else{
+			if( x >= videoPlayer.getWidth()*resizeVideo - 10){
+				y = ofClamp(y + ofRandom(5, 10), 0, videoPlayer.getHeight()*resizeVideo);
+				x = 0;
+			}
+			x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth()*resizeVideo);
+		}
+		
+		
+		sizeX = ofRandom(5, 10);
+		sizeY = ofRandom(5, 10);
+		
+                int dx = x + ofRandom(-10, 10);
+                int dy = y + ofRandom(-10, 10);
+
+                
+
+                videoTexture.drawSubsection(
+                    dx, dy,
+                    sizeX, sizeY,
+                    x, y,
+                    sizeX, sizeY
+                );
+            }
+            textoDerecha += "Bloques: 1\n";
+        } else textoDerecha += "Bloques: 0\n";
+
+        /*// --- 3. Copias "fantasma" desplazadas (como un frame dañado mezclado) ---
+        if(ofRandomuf() < corruptionIntensity * 0.3f) {
+            int ghostCount = 3 + 4 * corruptionIntensity;
             ofEnableBlendMode(OF_BLENDMODE_ADD);
-            
-            ofSetColor(255, 0, 0, 100);
-            videoTexture.draw(ofRandom(-rgbShift, 0), ofRandom(-rgbShift, 0), videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
-            ofSetColor(0, 255, 0, 100);
-            videoTexture.draw(ofRandom(0, rgbShift), ofRandom(-rgbShift, 0), videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
-            ofSetColor(0, 0, 255, 100);
-            videoTexture.draw(ofRandom(-rgbShift, rgbShift), ofRandom(0, rgbShift), videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
-            
+            for(int i = 0; i < ghostCount; i++) {
+                int xOffset = ofRandom(-200, 200);
+                int yOffset = ofRandom(-80, 80);
+                ofSetColor(255, 255, 255, 50);
+                videoTexture.draw(xOffset, yOffset, 
+                    videoPlayer.getWidth()*resizeVideo, 
+                    videoPlayer.getHeight()*resizeVideo);
+            }
             ofDisableBlendMode();
-            
-             textoDerecha += "dRGB: 1\n"; 
-        }
-        else  textoDerecha += "dRGB: 0\n";
-        
+            textoDerecha += "Fantasmas: 1\n";
+        } else textoDerecha += "Fantasmas: 0\n";*/
+
+        // --- 4. Desplazamiento RGB más fuerte y horizontal ---
+        /*if(distortionAmount > 0.3f) {
+            float shift = 10 + 40 * powf(distortionAmount, 2);
+            ofEnableBlendMode(OF_BLENDMODE_ADD);
+
+            ofSetColor(255, 0, 0, 90);
+            videoTexture.draw(shift, 0);
+
+            ofSetColor(0, 255, 0, 90);
+            videoTexture.draw(-shift, 0);
+
+            ofSetColor(0, 0, 255, 90);
+            videoTexture.draw(0, shift / 2);
+
+            ofDisableBlendMode();
+            textoDerecha += "RGBShift: 1\n";
+        } else textoDerecha += "RGBShift: 0\n";*/
     }
-    else textoDerecha += "dRGB: 0\n";
 }
 
-void ofApp::dibujarBarraProgreso(int xx, int yy, float porcentaje){
-	
-	int ancho_barra = offsetVideoPosX-20-xx;
-	int ancho_completado = (int)ofMap(porcentaje, 0, 100, 0, ancho_barra);
-	
-	ofSetColor(255, 100);
-	ofDrawRectangle(xx, yy, ancho_barra, 15);
-	
-	ofSetColor(5, 180, 80);
-	ofDrawRectangle(xx, yy, ancho_completado, 15);
-}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed  (int key){
