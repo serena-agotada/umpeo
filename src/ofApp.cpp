@@ -46,6 +46,9 @@ void ofApp::setup(){
 		videoPlayer.play();
 		fbo.clear();
 		fbo.allocate(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
+		glitchFbo.allocate(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
+		
+		glitchTexture.allocate(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, OF_PIXELS_RGBA);
 		
 		ofLog() << "Videos cargados";
 		
@@ -161,6 +164,9 @@ void ofApp::setup(){
 	
 	textoDerecha = " ";
 	
+	inicio_linea_corrupta = 0;
+	
+	
 }
 
 //--------------------------------------------------------------
@@ -168,7 +174,9 @@ void ofApp::update(){
     
     videoPlayer.update();
     
-    if(videoPlayer.isFrameNew() && videoTexture.isAllocated()) {videoTexture = videoPlayer.getTexture();
+    if(videoPlayer.isFrameNew() && videoTexture.isAllocated()) {
+	    
+	videoTexture = videoPlayer.getTexture();
         
         fbo.begin();
         {
@@ -487,55 +495,69 @@ void ofApp::applyGlitchEffect() {
         // --- 2. Bloques glitch con color alterado ---
         if(ofRandomuf() < corruptionIntensity * 0.8f || corruptionIntensity > 0.8) {
 		
-            //int numBlocks = (videoPlayer.getWidth()*resizeVideo / 25) + 200 * corruptionIntensity;
-	    int sizeX = 0;
-	    int sizeY = 0;
-	    int x = 0;
-	    int alto_linea = videoPlayer.getHeight()*resizeVideo/1.5 * corruptionIntensity;
-	    int inicio_linea = ofRandom(videoPlayer.getHeight()*resizeVideo - alto_linea);
-	    int y = ofRandom(inicio_linea);
-	    
-	    ofSetColor(
-		ofRandom(200, 255), 
-		ofRandom(200, 255), 
-		ofRandom(200, 255),
-		255
-	    );
-		
-            for(int i = 0; y < videoPlayer.getHeight()*resizeVideo - 10; i++) {
-		 
-		if( y < inicio_linea || y > inicio_linea+alto_linea){
-			if( x >= videoPlayer.getWidth()*resizeVideo - 10){
-				y = y + ofRandom(5, videoPlayer.getHeight()*resizeVideo-y);
-				x = 0;
+	    if(ofGetFrameNum() % (int)ofRandom(20) == 0){
+		    glitchFbo.begin();
+		    ofClear(0, 0, 0, 0);
+    
+		    glitchTexture = videoPlayer.getTexture();
+		    //int numBlocks = (videoPlayer.getWidth()*resizeVideo / 25) + 200 * corruptionIntensity;
+		    int sizeX = 0;
+		    int sizeY = 0;
+		    int x = 0;
+		    int alto_linea = videoPlayer.getHeight()*resizeVideo/1.5 * corruptionIntensity;
+		    
+		    if(ofRandom(1) > 0.9){
+			inicio_linea_corrupta = ofRandom(videoPlayer.getHeight()*resizeVideo - alto_linea);
+		    }
+		    
+		    int y = ofRandom(inicio_linea_corrupta);
+		    
+		    ofSetColor(
+			ofRandom(200, 255), 
+			ofRandom(200, 255), 
+			ofRandom(100, 255),
+			255
+		    );
+			
+		    for(int i = 0; y < videoPlayer.getHeight()*resizeVideo - 10; i++) {
+			 
+			if( y < inicio_linea_corrupta || y > inicio_linea_corrupta+alto_linea){
+				if( x >= videoPlayer.getWidth()*resizeVideo - 10){
+					y = y + ofRandom(5, videoPlayer.getHeight()*resizeVideo-y);
+					x = 0;
+				}
+				x = x + ofRandom(15, videoPlayer.getWidth()*resizeVideo-x);
 			}
-			x = x + ofRandom(15, videoPlayer.getWidth()*resizeVideo-x);
-		}
-		// si esta dentro de la porcion corrupta
-		else{
-			if( x >= videoPlayer.getWidth()*resizeVideo - 10){
-				y = ofClamp(y + ofRandom(5, 10), 0, videoPlayer.getHeight()*resizeVideo);
-				x = 0;
+			// si esta dentro de la porcion corrupta
+			else{
+				if( x >= videoPlayer.getWidth()*resizeVideo - 10){
+					y = ofClamp(y + ofRandom(5, 10), 0, videoPlayer.getHeight()*resizeVideo);
+					x = 0;
+				}
+				x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth()*resizeVideo);
 			}
-			x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth()*resizeVideo);
+			
+			
+			sizeX = ofRandom(5, 10);
+			sizeY = ofRandom(5, 10);
+			
+			int dx = x + ofRandom(-5, 5);
+			int dy = y + ofRandom(-2, 2);
+
+			glitchTexture.drawSubsection(
+			    dx, dy,
+			    sizeX, sizeY,
+			    x, y,
+			    sizeX, sizeY
+			);
 		}
 		
-		
-		sizeX = ofRandom(5, 10);
-		sizeY = ofRandom(5, 10);
-		
-                int dx = x + ofRandom(-10, 10);
-                int dy = y + ofRandom(-10, 10);
-
-                
-
-                videoTexture.drawSubsection(
-                    dx, dy,
-                    sizeX, sizeY,
-                    x, y,
-                    sizeX, sizeY
-                );
+		glitchFbo.end();
             }
+	    //ofEnableBlendMode(OF_BLENDMODE_SCREEN);
+	    glitchFbo.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
+	    //ofDisableBlendMode();
+	    
             textoDerecha += "Bloques: 1\n";
         } else textoDerecha += "Bloques: 0\n";
 

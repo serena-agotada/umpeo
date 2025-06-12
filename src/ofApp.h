@@ -53,9 +53,9 @@ class ofApp : public ofBaseApp{
 		float newVolume; // para calcular el volumen
 		float prevDist;
 		ofPixels pixels;
-		ofTexture videoTexture, lastValidFrame;
+		ofTexture videoTexture, glitchTexture, lastValidFrame;
 		float distortionAmount;
-		ofFbo fbo;
+		ofFbo fbo, glitchFbo;
 		int oscuridad;
 		float resizeVideo;
 		string textoDerecha;
@@ -69,6 +69,7 @@ class ofApp : public ofBaseApp{
 		float pos_prox_etiqueta;
 		ofColor colores_etiquetas[100];
 		vector<string> displayEtiquetas;
+		int inicio_linea_corrupta;
 
 		ofxOscReceiver receiver;
 };
