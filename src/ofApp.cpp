@@ -570,7 +570,7 @@ void ofApp::applyGlitchEffect() {
 			sizeX = ofRandom(5, 10);
 			sizeY = ofRandom(5, 10);
 
-			if(x % ofRandom(10, 30) < 6){
+			if(x % (int)ofRandom(10, 30) < 6){
 				if(pixelColor.getBrightness() > 60){
 					
 					int dx = x + ofRandom(-5, 5);
