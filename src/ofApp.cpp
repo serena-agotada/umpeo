@@ -519,7 +519,7 @@ void ofApp::applyGlitchEffect() {
 				ofRandom(245, 255), 
 				ofRandom(0, 10), 
 				ofRandom(245, 255),
-				255
+				ofMap(corruptionIntensity, 0, 1, 10, 255)
 			    );
 		    }
 		    else if(ran_color <= 2){
@@ -527,7 +527,7 @@ void ofApp::applyGlitchEffect() {
 				ofRandom(0, 10), 
 				ofRandom(245, 255), 
 				ofRandom(245, 255),
-				255
+				ofMap(corruptionIntensity, 0, 1, 10, 255)
 			    );
 		    }
 		    else if(ran_color <= 3){
@@ -535,7 +535,7 @@ void ofApp::applyGlitchEffect() {
 				ofRandom(245, 255), 
 				ofRandom(245, 255), 
 				ofRandom(0, 10),
-				255
+				ofMap(corruptionIntensity, 0, 1, 10, 255)
 			    );
 		    }
 		    
@@ -570,16 +570,16 @@ void ofApp::applyGlitchEffect() {
 			sizeX = ofRandom(5, 10);
 			sizeY = ofRandom(5, 10);
 
-			if(x % (int)ofRandom(10, 30) < 6){
+			if(x % (int)ofRandom(10, 30) < 10){
 				if(pixelColor.getBrightness() > 60){
 					
 					int dx = x + ofRandom(-5, 5);
 					int dy = y + ofRandom(-2, 2);
 
 					glitchTexture.drawSubsection(
-					    x, y,
-					    sizeX, sizeY,
 					    dx, dy,
+					    sizeX, sizeY,
+					    x, y,
 					    sizeX, sizeY
 					);
 				}
