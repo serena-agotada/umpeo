@@ -504,18 +504,19 @@ void ofApp::applyGlitchEffect() {
 		    int sizeX = 0;
 		    int sizeY = 0;
 		    int x = 0;
-		    int alto_linea = videoPlayer.getHeight()*resizeVideo/1.5 * corruptionIntensity;
+		    int alto_linea = videoPlayer.getHeight()/1.5 * corruptionIntensity;
 		    
 		    if(ofRandom(1) > 0.9){
-			inicio_linea_corrupta = ofRandom(videoPlayer.getHeight()*resizeVideo - alto_linea);
+			inicio_linea_corrupta = ofRandom(videoPlayer.getHeight() - alto_linea);
 		    }
 		    
 		    int y = ofRandom(inicio_linea_corrupta);
 		    
 		    int ran_color = ofRandom(3);
+		    ofColor color_corrupcion;
 		    
 		    if(ran_color <= 1){
-			    ofSetColor(
+			    color_corrupcion = ofColor(
 				ofRandom(245, 255), 
 				ofRandom(0, 10), 
 				ofRandom(245, 255),
@@ -523,7 +524,7 @@ void ofApp::applyGlitchEffect() {
 			    );
 		    }
 		    else if(ran_color <= 2){
-			    ofSetColor(
+			    color_corrupcion = ofColor(
 				ofRandom(0, 10), 
 				ofRandom(245, 255), 
 				ofRandom(245, 255),
@@ -531,13 +532,14 @@ void ofApp::applyGlitchEffect() {
 			    );
 		    }
 		    else if(ran_color <= 3){
-			    ofSetColor(
+			    color_corrupcion = ofColor(
 				ofRandom(245, 255), 
 				ofRandom(245, 255), 
 				ofRandom(0, 10),
 				ofMap(corruptionIntensity, 0, 1, 10, 255)
 			    );
 		    }
+		    
 		    
 		    // 1. Declara ofPixels
 		    ofPixels texturePixels;
@@ -546,22 +548,22 @@ void ofApp::applyGlitchEffect() {
 		    texturePixels.allocate(glitchTexture.getWidth(), glitchTexture.getHeight(), OF_PIXELS_RGBA);
 		    glitchTexture.readToPixels(texturePixels);
 			
-		    for(int i = 0; y < videoPlayer.getHeight()*resizeVideo - 10; i++) {
+		    for(int i = 0; y < videoPlayer.getHeight() - 10; i++) {
 			 
 			if( y < inicio_linea_corrupta || y > inicio_linea_corrupta+alto_linea){
-				if( x >= videoPlayer.getWidth()*resizeVideo - 10){
-					y = y + ofRandom(5, videoPlayer.getHeight()*resizeVideo-y);
+				if( x >= videoPlayer.getWidth() - 10){
+					y = y + ofRandom(5, videoPlayer.getHeight()-y);
 					x = 0;
 				}
-				x = x + ofRandom(5, videoPlayer.getWidth()*resizeVideo-x);
+				x = x + ofRandom(5, videoPlayer.getWidth()-x);
 			}
 			// si esta dentro de la porcion corrupta
 			else{
-				if( x >= videoPlayer.getWidth()*resizeVideo - 10){
-					y = ofClamp(y + ofRandom(5, 10), 0, videoPlayer.getHeight()*resizeVideo);
+				if( x >= videoPlayer.getWidth() - 10){
+					y = ofClamp(y + ofRandom(5, 10), 0, videoPlayer.getHeight());
 					x = 0;
 				}
-				x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth()*resizeVideo);
+				x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth());
 			}
 
 			// 3. Obtén el color en una posición (x,y)
@@ -569,26 +571,46 @@ void ofApp::applyGlitchEffect() {
 			
 			sizeX = ofRandom(5, 10);
 			sizeY = ofRandom(5, 10);
+			
+			if(pixelColor.getBrightness() > 60 && ofRandom(1) < 0.8){
 
-			if(x % (int)ofRandom(10, 30) < 10){
-				if(pixelColor.getBrightness() > 60){
-					
+				if(pixelColor.getBrightness() < 200 || x % (int)ofRandom(10, 30) < 8){
 					int dx = x + ofRandom(-5, 5);
-					int dy = y + ofRandom(-2, 2);
-
+					int dy = y + ofRandom(-5, 5);
+					
+					ofSetColor(color_corrupcion);
+						
 					glitchTexture.drawSubsection(
-					    dx, dy,
-					    sizeX, sizeY,
-					    x, y,
-					    sizeX, sizeY
+						dx*resizeVideo, dy*resizeVideo,
+						sizeX*resizeVideo, sizeY*resizeVideo,
+						x*resizeVideo, y*resizeVideo,
+						sizeX*resizeVideo, sizeY*resizeVideo
+					);
+					
+				}
+				else if(pixelColor.getBrightness() <= 60){
+					if(pixelColor.getBrightness() < 230){
+						ofSetColor(color_corrupcion.r, color_corrupcion.g, color_corrupcion.b, 255);
+					}
+					else{
+						ofColor color_corrupcion_brillo = color_corrupcion;
+						color_corrupcion_brillo.setBrightness(250);
+						ofSetColor(color_corrupcion_brillo);
+					}
+					
+					ofDrawRectangle(
+						x*resizeVideo, y*resizeVideo,
+						sizeX*resizeVideo, sizeY*resizeVideo
 					);
 				}
-			}
-			else{
-				ofDrawRectangle(
-					x, y,
-					sizeX, sizeY
-				);
+				else{
+					ofSetColor(0, 0, 0, 255);
+					ofDrawRectangle(
+						x*resizeVideo, y*resizeVideo,
+						sizeX*resizeVideo, sizeY*resizeVideo
+					);
+				}
+				
 			}
 		}
 		
