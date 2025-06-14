@@ -512,12 +512,39 @@ void ofApp::applyGlitchEffect() {
 		    
 		    int y = ofRandom(inicio_linea_corrupta);
 		    
-		    ofSetColor(
-			ofRandom(200, 255), 
-			ofRandom(200, 255), 
-			ofRandom(100, 255),
-			255
-		    );
+		    int ran_color = ofRandom(3);
+		    
+		    if(ran_color <= 1){
+			    ofSetColor(
+				ofRandom(245, 255), 
+				ofRandom(0, 10), 
+				ofRandom(245, 255),
+				255
+			    );
+		    }
+		    else if(ran_color <= 2){
+			    ofSetColor(
+				ofRandom(0, 10), 
+				ofRandom(245, 255), 
+				ofRandom(245, 255),
+				255
+			    );
+		    }
+		    else if(ran_color <= 3){
+			    ofSetColor(
+				ofRandom(245, 255), 
+				ofRandom(245, 255), 
+				ofRandom(0, 10),
+				255
+			    );
+		    }
+		    
+		    // 1. Declara ofPixels
+		    ofPixels texturePixels;
+
+		    // 2. Obtén los píxeles de la textura (cuando necesites leer)
+		    texturePixels.allocate(glitchTexture.getWidth(), glitchTexture.getHeight(), OF_PIXELS_RGBA);
+		    glitchTexture.readToPixels(texturePixels);
 			
 		    for(int i = 0; y < videoPlayer.getHeight()*resizeVideo - 10; i++) {
 			 
@@ -526,7 +553,7 @@ void ofApp::applyGlitchEffect() {
 					y = y + ofRandom(5, videoPlayer.getHeight()*resizeVideo-y);
 					x = 0;
 				}
-				x = x + ofRandom(15, videoPlayer.getWidth()*resizeVideo-x);
+				x = x + ofRandom(5, videoPlayer.getWidth()*resizeVideo-x);
 			}
 			// si esta dentro de la porcion corrupta
 			else{
@@ -536,20 +563,33 @@ void ofApp::applyGlitchEffect() {
 				}
 				x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth()*resizeVideo);
 			}
-			
+
+			// 3. Obtén el color en una posición (x,y)
+			ofColor pixelColor = texturePixels.getColor(x, y);
 			
 			sizeX = ofRandom(5, 10);
 			sizeY = ofRandom(5, 10);
-			
-			int dx = x + ofRandom(-5, 5);
-			int dy = y + ofRandom(-2, 2);
 
-			glitchTexture.drawSubsection(
-			    dx, dy,
-			    sizeX, sizeY,
-			    x, y,
-			    sizeX, sizeY
-			);
+			if(x % ofRandom(10, 30) < 6){
+				if(pixelColor.getBrightness() > 60){
+					
+					int dx = x + ofRandom(-5, 5);
+					int dy = y + ofRandom(-2, 2);
+
+					glitchTexture.drawSubsection(
+					    x, y,
+					    sizeX, sizeY,
+					    dx, dy,
+					    sizeX, sizeY
+					);
+				}
+			}
+			else{
+				ofDrawRectangle(
+					x, y,
+					sizeX, sizeY
+				);
+			}
 		}
 		
 		glitchFbo.end();
