@@ -475,7 +475,7 @@ void ofApp::applyGlitchEffect() {
 
     if(distortionAmount > 0.1f) {
 
-        // --- 2. Bloques glitch con color alterado ---
+        // --- Bloques glitch con color alterado ---
         if(ofRandomuf() < distortionAmount*2 || distortionAmount > 0.7) {
 		
 		if(ofGetFrameNum() % (int)ofRandom(20*distortionAmount) == 0){
@@ -523,10 +523,8 @@ void ofApp::applyGlitchEffect() {
 			}
 			    
 			    
-			    // 1. Declara ofPixels
+			    // Declara ofPixels
 			    ofPixels texturePixels;
-
-			    // 2. Obtén los píxeles de la textura (cuando necesites leer)
 			    texturePixels.allocate(glitchTexture.getWidth(), glitchTexture.getHeight(), OF_PIXELS_RGBA);
 			    glitchTexture.readToPixels(texturePixels);
 				
@@ -561,7 +559,7 @@ void ofApp::applyGlitchEffect() {
 					if(pixelColor.getBrightness() > 80){
 						
 						// DESPLAZAMIENTO DE BLOQUES + COLOREADO (PARA PIXELES NO TAN CLAROS)
-						if(pixelColor.getBrightness() < 220 || i % (int)ofRandom(10, 30) < 10){
+						if(pixelColor.getBrightness() < 200 || i % (int)ofRandom(10, 30) < 10){
 							int dx = x + ofRandom(-5, 5);
 							int dy = y + ofRandom(-5, 5);
 							
@@ -577,13 +575,14 @@ void ofApp::applyGlitchEffect() {
 						}
 						else{
 							// SI EL PIXEL NO ES CLARO PINTO TODO EL BLOQUE DEL COLOR CORRUPTO
-							if(pixelColor.getBrightness() < 220){
+							if(pixelColor.getBrightness() < 200){
 								ofSetColor(color_corrupcion.r, color_corrupcion.g, color_corrupcion.b, 255);
 							}
 							// SI EL PIXEL ES CLARO LE SUBO MUCHO EL BRILLO
 							else{
 								ofColor color_corrupcion_brillo = color_corrupcion;
-								color_corrupcion_brillo.setBrightness(252);
+								//color_corrupcion_brillo.setBrightness(255);
+								color_corrupcion_brillo.setHsb(color_corrupcion_brillo.getHue(), 255, 252);
 								ofSetColor(color_corrupcion_brillo);
 							}
 							
