@@ -294,7 +294,7 @@ void ofApp::draw(){
 			if(distortionAmount > 0.02){
 				if(fbo.isAllocated() && videoTexture.isAllocated()) {
 					
-					fbo.draw(offsetVideoPosX, offsetVideoPosY, fbo.getWidth(), fbo.getHeight());
+					fbo.draw(offsetVideoPosX, offsetVideoPosY, fbo.getWidth()*resizeVideo, fbo.getHeight()*resizeVideo);
 					//ofDrawBitmapString("Memoria: FBO", 20, offsetVideoPosY+60);
 					
 					// Guardar el frame actual como último válido
@@ -476,7 +476,7 @@ void ofApp::applyGlitchEffect() {
     if(distortionAmount > 0.1f) {
 
         // --- 2. Bloques glitch con color alterado ---
-        if(ofRandomuf() < distortionAmount*0.5) {
+        if(ofRandomuf() < distortionAmount*2 || distortionAmount > 0.7) {
 		
 		if(ofGetFrameNum() % (int)ofRandom(20*distortionAmount) == 0){
 			glitchFbo.begin();
@@ -486,7 +486,7 @@ void ofApp::applyGlitchEffect() {
 			int sizeY = 0;
 			int x = 0;
 			int alto_linea = videoPlayer.getHeight()/1.7 * distortionAmount;
-			if(ofRandom(1) > 0.85){
+			if(ofRandom(1) > 0.95){
 				inicio_linea_corrupta = ofRandom(videoPlayer.getHeight() - alto_linea);
 			}
 			int y = ofRandom(inicio_linea_corrupta);
@@ -601,7 +601,6 @@ void ofApp::applyGlitchEffect() {
 							sizeX*resizeVideo, sizeY*resizeVideo
 						);
 					}
-					ofDrawBitmapString("CORRUPCION", 20, offsetVideoPosY+videoPlayer.getWidth()*resizeVideo);
 				}
 				
 				// PIXELADO
@@ -612,7 +611,6 @@ void ofApp::applyGlitchEffect() {
 						x*resizeVideo, y*resizeVideo,
 						sizeX*resizeVideo, sizeY*resizeVideo
 					);
-					ofDrawBitmapString("PIXELADO", 20, offsetVideoPosY+videoPlayer.getWidth()*resizeVideo);
 				}
 			}
 			
