@@ -467,195 +467,164 @@ void ofApp::applyGlitchEffect() {
     if(ofRandomuf() > distortionAmount * 0.05f) {
         videoTexture.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
         textoDerecha += "Base: 0\n";
-    } else {
+    } 
+    else {
+	videoTexture.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);   
         textoDerecha += "Base: 1\n";
     }
 
-    if(distortionAmount > 0.4f) {
-        float corruptionIntensity = ofMap(distortionAmount, 0.4f, 1.0f, 0.0f, 1.0f);
-
-        // --- 1. Corrupción horizontal tipo "slice" ---
-        /*if(ofRandomuf() < corruptionIntensity * 0.8f) {
-            int numSlices = 8 + 20 * corruptionIntensity;
-            for(int i = 0; i < numSlices; i++) {
-                int y = ofRandom(videoPlayer.getHeight()*resizeVideo);
-                int h = ofRandom(ofGetHeight()/6, ofGetHeight()/2.3);
-                int xOffset = ofRandom(-180, 180) * corruptionIntensity;
-
-                videoTexture.drawSubsection(
-                    xOffset, y, 
-                    videoPlayer.getWidth()*resizeVideo, h, 
-                    0, y, 
-                    videoPlayer.getWidth()*resizeVideo, h
-                );
-            }
-            textoDerecha += "Slices: 1\n";
-        } else textoDerecha += "Slices: 0\n";*/
+    if(distortionAmount > 0.1f) {
 
         // --- 2. Bloques glitch con color alterado ---
-        if(ofRandomuf() < corruptionIntensity * 0.8f || corruptionIntensity > 0.8) {
+        if(ofRandomuf() < distortionAmount*0.5) {
 		
-	    if(ofGetFrameNum() % (int)ofRandom(20) == 0){
-		    glitchFbo.begin();
-		    ofClear(0, 0, 0, 0);
-    
-		    glitchTexture = videoPlayer.getTexture();
-		    //int numBlocks = (videoPlayer.getWidth()*resizeVideo / 25) + 200 * corruptionIntensity;
-		    int sizeX = 0;
-		    int sizeY = 0;
-		    int x = 0;
-		    int alto_linea = videoPlayer.getHeight()/1.5 * corruptionIntensity;
-		    
-		    if(ofRandom(1) > 0.9){
-			inicio_linea_corrupta = ofRandom(videoPlayer.getHeight() - alto_linea);
-		    }
-		    
-		    int y = ofRandom(inicio_linea_corrupta);
-		    
-		    int ran_color = ofRandom(3);
-		    ofColor color_corrupcion;
-		    
-		    if(ran_color <= 1){
-			    color_corrupcion = ofColor(
-				ofRandom(245, 255), 
-				ofRandom(0, 10), 
-				ofRandom(245, 255),
-				ofMap(corruptionIntensity, 0, 1, 10, 255)
-			    );
-		    }
-		    else if(ran_color <= 2){
-			    color_corrupcion = ofColor(
-				ofRandom(0, 10), 
-				ofRandom(245, 255), 
-				ofRandom(245, 255),
-				ofMap(corruptionIntensity, 0, 1, 10, 255)
-			    );
-		    }
-		    else if(ran_color <= 3){
-			    color_corrupcion = ofColor(
-				ofRandom(245, 255), 
-				ofRandom(245, 255), 
-				ofRandom(0, 10),
-				ofMap(corruptionIntensity, 0, 1, 10, 255)
-			    );
-		    }
-		    
-		    
-		    // 1. Declara ofPixels
-		    ofPixels texturePixels;
-
-		    // 2. Obtén los píxeles de la textura (cuando necesites leer)
-		    texturePixels.allocate(glitchTexture.getWidth(), glitchTexture.getHeight(), OF_PIXELS_RGBA);
-		    glitchTexture.readToPixels(texturePixels);
-			
-		    for(int i = 0; y < videoPlayer.getHeight() - 10; i++) {
-			 
-			if( y < inicio_linea_corrupta || y > inicio_linea_corrupta+alto_linea){
-				if( x >= videoPlayer.getWidth() - 10){
-					y = y + ofRandom(5, videoPlayer.getHeight()-y);
-					x = 0;
-				}
-				x = x + ofRandom(5, videoPlayer.getWidth()-x);
+		if(ofGetFrameNum() % (int)ofRandom(20*distortionAmount) == 0){
+			glitchFbo.begin();
+			ofClear(0, 0, 0, 0);
+			glitchTexture = videoPlayer.getTexture();
+			int sizeX = 0;
+			int sizeY = 0;
+			int x = 0;
+			int alto_linea = videoPlayer.getHeight()/1.7 * distortionAmount;
+			if(ofRandom(1) > 0.85){
+				inicio_linea_corrupta = ofRandom(videoPlayer.getHeight() - alto_linea);
 			}
-			// si esta dentro de la porcion corrupta
-			else{
-				if( x >= videoPlayer.getWidth() - 10){
-					y = ofClamp(y + ofRandom(5, 10), 0, videoPlayer.getHeight());
-					x = 0;
-				}
-				x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth());
-			}
-
-			// 3. Obtén el color en una posición (x,y)
-			ofColor pixelColor = texturePixels.getColor(x, y);
+			int y = ofRandom(inicio_linea_corrupta);
 			
-			sizeX = ofRandom(5, 10);
-			sizeY = ofRandom(5, 10);
+			// ELECCION DE COLOR
+			int ran_color = ofRandom(3);
+			ofColor color_corrupcion;
 			
-			if(pixelColor.getBrightness() > 60 && ofRandom(1) < 0.8){
-
-				if(pixelColor.getBrightness() < 200 || x % (int)ofRandom(10, 30) < 8){
-					int dx = x + ofRandom(-5, 5);
-					int dy = y + ofRandom(-5, 5);
-					
-					ofSetColor(color_corrupcion);
-						
-					glitchTexture.drawSubsection(
-						dx*resizeVideo, dy*resizeVideo,
-						sizeX*resizeVideo, sizeY*resizeVideo,
-						x*resizeVideo, y*resizeVideo,
-						sizeX*resizeVideo, sizeY*resizeVideo
-					);
-					
+			if(distortionAmount > 0.8){
+				if(ran_color <= 1){
+					color_corrupcion = ofColor(
+						ofRandom(245, 255), 
+						ofRandom(0, 10), 
+						ofRandom(245, 255),
+						ofMap(distortionAmount, 0, 1, 10, 255)
+					    );
 				}
-				else if(pixelColor.getBrightness() <= 60){
-					if(pixelColor.getBrightness() < 230){
-						ofSetColor(color_corrupcion.r, color_corrupcion.g, color_corrupcion.b, 255);
-					}
-					else{
-						ofColor color_corrupcion_brillo = color_corrupcion;
-						color_corrupcion_brillo.setBrightness(250);
-						ofSetColor(color_corrupcion_brillo);
-					}
-					
-					ofDrawRectangle(
-						x*resizeVideo, y*resizeVideo,
-						sizeX*resizeVideo, sizeY*resizeVideo
+				else if(ran_color <= 2){
+					color_corrupcion = ofColor(
+						ofRandom(0, 10), 
+						ofRandom(245, 255), 
+						ofRandom(245, 255),
+						ofMap(distortionAmount, 0, 1, 10, 255)
 					);
 				}
+				else if(ran_color <= 3){
+					color_corrupcion = ofColor(
+						ofRandom(245, 255), 
+						ofRandom(245, 255), 
+						ofRandom(0, 10),
+						ofMap(distortionAmount, 0, 1, 10, 255)
+					    );
+				}
+			}
+			    
+			    
+			    // 1. Declara ofPixels
+			    ofPixels texturePixels;
+
+			    // 2. Obtén los píxeles de la textura (cuando necesites leer)
+			    texturePixels.allocate(glitchTexture.getWidth(), glitchTexture.getHeight(), OF_PIXELS_RGBA);
+			    glitchTexture.readToPixels(texturePixels);
+				
+			    for(int i = 0; y < videoPlayer.getHeight() - 10; i++) {
+				 
+				// FUERA DE LINEA CORRUPTA
+				if(y < inicio_linea_corrupta || y > inicio_linea_corrupta+alto_linea){
+					if( x >= videoPlayer.getWidth() - 10){
+						y = y + ofRandom(5, videoPlayer.getHeight()-y);
+						x = 0;
+					}
+					x = x + ofRandom(5, videoPlayer.getWidth()-x);
+				}
+				// DENTRO DE LINEA CORRUPTA
 				else{
-					ofSetColor(0, 0, 0, 255);
-					ofDrawRectangle(
-						x*resizeVideo, y*resizeVideo,
-						sizeX*resizeVideo, sizeY*resizeVideo
-					);
+					if( x >= videoPlayer.getWidth() - 10){
+						y = ofClamp(y + ofRandom(5, 10), 0, videoPlayer.getHeight());
+						x = 0;
+					}
+					x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth());
+				}
+
+				// CALCULO COLOR DE PIXEL
+				ofColor pixelColor = texturePixels.getColor(x, y);
+				
+				// TAMAÑO DE BLOQUE
+				sizeX = ofRandom(8, 10);
+				sizeY = ofRandom(8, 10);
+				
+				// CORRUPCION MAS FUERTE - COLOR
+				if(distortionAmount > 0.8){
+					if(pixelColor.getBrightness() > 80){
+						
+						// DESPLAZAMIENTO DE BLOQUES + COLOREADO (PARA PIXELES NO TAN CLAROS)
+						if(pixelColor.getBrightness() < 220 || i % (int)ofRandom(10, 30) < 10){
+							int dx = x + ofRandom(-5, 5);
+							int dy = y + ofRandom(-5, 5);
+							
+							ofSetColor(color_corrupcion);
+								
+							glitchTexture.drawSubsection(
+								dx*resizeVideo, dy*resizeVideo,
+								sizeX*resizeVideo, sizeY*resizeVideo,
+								x*resizeVideo, y*resizeVideo,
+								sizeX*resizeVideo, sizeY*resizeVideo
+							);
+							
+						}
+						else{
+							// SI EL PIXEL NO ES CLARO PINTO TODO EL BLOQUE DEL COLOR CORRUPTO
+							if(pixelColor.getBrightness() < 220){
+								ofSetColor(color_corrupcion.r, color_corrupcion.g, color_corrupcion.b, 255);
+							}
+							// SI EL PIXEL ES CLARO LE SUBO MUCHO EL BRILLO
+							else{
+								ofColor color_corrupcion_brillo = color_corrupcion;
+								color_corrupcion_brillo.setBrightness(252);
+								ofSetColor(color_corrupcion_brillo);
+							}
+							
+							ofDrawRectangle(
+								x*resizeVideo, y*resizeVideo,
+								sizeX*resizeVideo, sizeY*resizeVideo
+							);
+						}
+					}
+					// BLOQUES NEGROS
+					else if(ofRandom(1) > 0.9){
+						ofSetColor(0, 0, 0, 255);
+						ofDrawRectangle(
+							x*resizeVideo, y*resizeVideo,
+							sizeX*resizeVideo, sizeY*resizeVideo
+						);
+					}
+					ofDrawBitmapString("CORRUPCION", 20, offsetVideoPosY+videoPlayer.getWidth()*resizeVideo);
 				}
 				
+				// PIXELADO
+				else if(distortionAmount > 0.1 && i % (int)ofRandom(2, 10) < 5){
+					
+					ofSetColor(pixelColor);
+					ofDrawRectangle(
+						x*resizeVideo, y*resizeVideo,
+						sizeX*resizeVideo, sizeY*resizeVideo
+					);
+					ofDrawBitmapString("PIXELADO", 20, offsetVideoPosY+videoPlayer.getWidth()*resizeVideo);
+				}
 			}
-		}
-		
-		glitchFbo.end();
-            }
+			
+			glitchFbo.end();
+		    
+	    }
 	    //ofEnableBlendMode(OF_BLENDMODE_SCREEN);
 	    glitchFbo.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
 	    //ofDisableBlendMode();
 	    
             textoDerecha += "Bloques: 1\n";
         } else textoDerecha += "Bloques: 0\n";
-
-        /*// --- 3. Copias "fantasma" desplazadas (como un frame dañado mezclado) ---
-        if(ofRandomuf() < corruptionIntensity * 0.3f) {
-            int ghostCount = 3 + 4 * corruptionIntensity;
-            ofEnableBlendMode(OF_BLENDMODE_ADD);
-            for(int i = 0; i < ghostCount; i++) {
-                int xOffset = ofRandom(-200, 200);
-                int yOffset = ofRandom(-80, 80);
-                ofSetColor(255, 255, 255, 50);
-                videoTexture.draw(xOffset, yOffset, 
-                    videoPlayer.getWidth()*resizeVideo, 
-                    videoPlayer.getHeight()*resizeVideo);
-            }
-            ofDisableBlendMode();
-            textoDerecha += "Fantasmas: 1\n";
-        } else textoDerecha += "Fantasmas: 0\n";*/
-
-        // --- 4. Desplazamiento RGB más fuerte y horizontal ---
-        /*if(distortionAmount > 0.3f) {
-            float shift = 10 + 40 * powf(distortionAmount, 2);
-            ofEnableBlendMode(OF_BLENDMODE_ADD);
-
-            ofSetColor(255, 0, 0, 90);
-            videoTexture.draw(shift, 0);
-
-            ofSetColor(0, 255, 0, 90);
-            videoTexture.draw(-shift, 0);
-
-            ofSetColor(0, 0, 255, 90);
-            videoTexture.draw(0, shift / 2);
-
-            ofDisableBlendMode();
-            textoDerecha += "RGBShift: 1\n";
-        } else textoDerecha += "RGBShift: 0\n";*/
     }
 }
 
