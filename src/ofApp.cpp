@@ -45,10 +45,10 @@ void ofApp::setup(){
 		videoPlayer.setLoopState(OF_LOOP_NORMAL);
 		videoPlayer.play();
 		fbo.clear();
-		fbo.allocate(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
-		glitchFbo.allocate(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
+		fbo.allocate(videoPlayer.getWidth(), videoPlayer.getHeight());
+		glitchFbo.allocate(videoPlayer.getWidth(), videoPlayer.getHeight());
 		
-		glitchTexture.allocate(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, OF_PIXELS_RGBA);
+		glitchTexture.allocate(videoPlayer.getWidth(), videoPlayer.getHeight(), OF_PIXELS_RGBA);
 		
 		ofLog() << "Videos cargados";
 		
@@ -256,7 +256,7 @@ void ofApp::draw(){
 				
 				// Reallocar el FBO con las nuevas dimensiones
 				fbo.clear();
-				fbo.allocate(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
+				fbo.allocate(videoPlayer.getWidth(), videoPlayer.getHeight());
 			}
 			
 		}
@@ -465,11 +465,11 @@ void ofApp::applyGlitchEffect() {
 
     // Dibujar frame base con una pequeña chance de fallar
     if(ofRandomuf() > distortionAmount * 0.05f) {
-        videoTexture.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
+        videoTexture.draw(0, 0, videoPlayer.getWidth(), videoPlayer.getHeight());
         textoDerecha += "Base: 0\n";
     } 
     else {
-	videoTexture.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);   
+	videoTexture.draw(0, 0, videoPlayer.getWidth(), videoPlayer.getHeight());   
         textoDerecha += "Base: 1\n";
     }
 
@@ -568,10 +568,10 @@ void ofApp::applyGlitchEffect() {
 							ofSetColor(color_corrupcion);
 								
 							glitchTexture.drawSubsection(
-								dx*resizeVideo, dy*resizeVideo,
-								sizeX*resizeVideo, sizeY*resizeVideo,
-								x*resizeVideo, y*resizeVideo,
-								sizeX*resizeVideo, sizeY*resizeVideo
+								dx, dy,
+								sizeX, sizeY,
+								x, y,
+								sizeX, sizeY
 							);
 							
 						}
@@ -588,8 +588,8 @@ void ofApp::applyGlitchEffect() {
 							}
 							
 							ofDrawRectangle(
-								x*resizeVideo, y*resizeVideo,
-								sizeX*resizeVideo, sizeY*resizeVideo
+								x, y,
+								sizeX, sizeY
 							);
 						}
 					}
@@ -597,8 +597,8 @@ void ofApp::applyGlitchEffect() {
 					else if(ofRandom(1) > 0.9){
 						ofSetColor(0, 0, 0, 255);
 						ofDrawRectangle(
-							x*resizeVideo, y*resizeVideo,
-							sizeX*resizeVideo, sizeY*resizeVideo
+							x, y,
+							sizeX, sizeY
 						);
 					}
 				}
@@ -608,8 +608,8 @@ void ofApp::applyGlitchEffect() {
 					
 					ofSetColor(pixelColor);
 					ofDrawRectangle(
-						x*resizeVideo, y*resizeVideo,
-						sizeX*resizeVideo, sizeY*resizeVideo
+						x, y,
+						sizeX, sizeY
 					);
 				}
 			}
@@ -618,7 +618,7 @@ void ofApp::applyGlitchEffect() {
 		    
 	    }
 	    //ofEnableBlendMode(OF_BLENDMODE_SCREEN);
-	    glitchFbo.draw(0, 0, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
+	    glitchFbo.draw(0, 0, videoPlayer.getWidth(), videoPlayer.getHeight());
 	    //ofDisableBlendMode();
 	    
             textoDerecha += "Bloques: 1\n";
