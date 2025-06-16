@@ -5,7 +5,7 @@ void ofApp::setup(){
 	
 // VARIABLES DE SETTEO ---------------------------------------------------------
 	
-	cantVideos = 59;
+	cantVideos = 58;
 	
 	resizeVideo = 0.85;
 	
@@ -247,7 +247,7 @@ void ofApp::draw(){
 				// Actualiza el indice de etiqueta
 				i_etiqueta = floor( ofMap( (float)videoPositions[currentVideoIndex], 0, 1, 0, (int)etiquetasVideos[currentVideoIndex].size() ) );
 				
-				if( i_etiqueta < etiquetasVideos[currentVideoIndex].size() ){
+				if( i_etiqueta < (int)etiquetasVideos[currentVideoIndex].size() ){
 					pos_prox_etiqueta = etiquetasVideos[currentVideoIndex][i_etiqueta+1].posicion;
 				}
 				
@@ -409,7 +409,7 @@ void ofApp::dibujarEtiquetas(int xx, int yy, int w, int h){
 		pos_prox_etiqueta = etiquetasVideos[currentVideoIndex][i_etiqueta+1].posicion;
 	}
 	// Actualizo el indice de etiqueta si ya tendría que pasar al siguiente
-	else if(videoPlayer.getPosition() >= pos_prox_etiqueta && i_etiqueta < etiquetasVideos[currentVideoIndex].size()){
+	else if(videoPlayer.getPosition() >= pos_prox_etiqueta && i_etiqueta < (int)etiquetasVideos[currentVideoIndex].size()){
 		i_etiqueta++;
 		pos_prox_etiqueta = etiquetasVideos[currentVideoIndex][i_etiqueta+1].posicion;
 	}
@@ -422,12 +422,12 @@ void ofApp::dibujarEtiquetas(int xx, int yy, int w, int h){
 		if(displayEtiquetas.size() == 0 || *ultima != etiqueta_actual.nombre){
 			displayEtiquetas.push_back(etiqueta_actual.nombre);
 		}
-		if(displayEtiquetas.size()*20 + tam_etiqueta*52 + offsetVideoPosY >= ofGetHeight()-offsetVideoPosY){
+		if((int)displayEtiquetas.size()*20 + tam_etiqueta*52 + offsetVideoPosY >= ofGetHeight()-offsetVideoPosY){
 			displayEtiquetas.erase( displayEtiquetas.begin() );
 		}
 	}
 	ofSetColor(255);
-	for(int de=0; de < displayEtiquetas.size(); de++){
+	for(int de=0; de < (int)displayEtiquetas.size(); de++){
 		ofDrawBitmapString(displayEtiquetas[de], xx, tam_etiqueta*52 + offsetVideoPosY*2 + de*20);
 	}
 
@@ -473,35 +473,35 @@ void ofApp::applyGlitchEffect() {
         textoDerecha += "Base: 1\n";
     }
 
-    if(distortionAmount > 0.1f) {
+    if(distortionAmount > 0.1f && oscuridad < 200) {
 
-        // --- Bloques glitch con color alterado ---
         if(ofRandomuf() < distortionAmount*2 || distortionAmount > 0.7) {
 		
 		if(ofGetFrameNum() % (int)ofRandom(20*distortionAmount) == 0){
 			glitchFbo.begin();
 			ofClear(0, 0, 0, 0);
+			
 			glitchTexture = videoPlayer.getTexture();
 			int sizeX = 0;
 			int sizeY = 0;
 			int x = 0;
-			int alto_linea = videoPlayer.getHeight()/1.7 * distortionAmount;
-			if(ofRandom(1) > 0.95){
+			int alto_linea = videoPlayer.getHeight() * distortionAmount;
+			if(ofRandom(1) > 0.98*distortionAmount){
 				inicio_linea_corrupta = ofRandom(videoPlayer.getHeight() - alto_linea);
 			}
-			int y = ofRandom(inicio_linea_corrupta);
+			int y = ofRandom(inicio_linea_corrupta/5);
 			
 			// ELECCION DE COLOR
 			int ran_color = ofRandom(3);
 			ofColor color_corrupcion;
 			
-			if(distortionAmount > 0.8){
+			if(distortionAmount > 0.1){
 				if(ran_color <= 1){
 					color_corrupcion = ofColor(
 						ofRandom(245, 255), 
 						ofRandom(0, 10), 
 						ofRandom(245, 255),
-						ofMap(distortionAmount, 0, 1, 10, 255)
+						ofMap(distortionAmount, 0, 1, 200, 255)
 					    );
 				}
 				else if(ran_color <= 2){
@@ -509,7 +509,7 @@ void ofApp::applyGlitchEffect() {
 						ofRandom(0, 10), 
 						ofRandom(245, 255), 
 						ofRandom(245, 255),
-						ofMap(distortionAmount, 0, 1, 10, 255)
+						ofMap(distortionAmount, 0, 1, 200, 255)
 					);
 				}
 				else if(ran_color <= 3){
@@ -517,7 +517,7 @@ void ofApp::applyGlitchEffect() {
 						ofRandom(245, 255), 
 						ofRandom(245, 255), 
 						ofRandom(0, 10),
-						ofMap(distortionAmount, 0, 1, 10, 255)
+						ofMap(distortionAmount, 0, 1, 200, 255)
 					    );
 				}
 			}
@@ -528,62 +528,118 @@ void ofApp::applyGlitchEffect() {
 			    texturePixels.allocate(glitchTexture.getWidth(), glitchTexture.getHeight(), OF_PIXELS_RGBA);
 			    glitchTexture.readToPixels(texturePixels);
 				
-			    for(int i = 0; y < videoPlayer.getHeight() - 10; i++) {
+			for(int i = 0; y < videoPlayer.getHeight() - 10; i++) {
 				 
 				// FUERA DE LINEA CORRUPTA
 				if(y < inicio_linea_corrupta || y > inicio_linea_corrupta+alto_linea){
-					if( x >= videoPlayer.getWidth() - 10){
-						y = y + ofRandom(5, videoPlayer.getHeight()-y);
+					// TAMAÑO DE BLOQUE
+					sizeY = 2 * (int)ofRandom(2, 10);
+					sizeX = sizeY * (int)ofRandom(3);
+					
+					if( x >= videoPlayer.getWidth() - sizeX ){
+						if(videoPlayer.getWidth()/(99*distortionAmount) > x && i % (sizeX*20) < 5){
+							y = y + ofRandom(sizeY, videoPlayer.getHeight()/(99*distortionAmount) - y);
+						}
+						else{
+							y = y + ofRandom(sizeY, videoPlayer.getHeight()-y);
+						}
 						x = 0;
 					}
-					x = x + ofRandom(5, videoPlayer.getWidth()-x);
+					
+					else if(videoPlayer.getWidth()/(99*distortionAmount) > x && i % 20 < ofRandom(15)){
+						x = x + ofRandom(sizeX, videoPlayer.getWidth()/(99*distortionAmount)-x);
+					}
+					else{
+						x = x + ofRandom(sizeX, videoPlayer.getWidth()-x);
+					}
 				}
 				// DENTRO DE LINEA CORRUPTA
 				else{
-					if( x >= videoPlayer.getWidth() - 10){
-						y = ofClamp(y + ofRandom(5, 10), 0, videoPlayer.getHeight());
-						x = 0;
+					// PRIMERAS LINEAS CORRUPTAS
+					if(y < inicio_linea_corrupta + alto_linea/4 && ofRandom(inicio_linea_corrupta + alto_linea/2) > y){
+						if( x >= videoPlayer.getWidth() - sizeX){
+							y = ofClamp(y + sizeY, 0, videoPlayer.getHeight());
+							x = 0;
+						}
+						else{
+							x = ofClamp(x + sizeX * (i % (sizeX * 3)), 0, videoPlayer.getWidth());
+						}
 					}
-					x = ofClamp(x + ofRandom(3, 7), 0, videoPlayer.getWidth());
+					// SIGUIENTES LINEAS
+					else{
+						
+						if( x >= videoPlayer.getWidth() - sizeX){
+							y = ofClamp(y + sizeY, 0, videoPlayer.getHeight());
+							x = 0;
+						}
+						else{
+							x = ofClamp(x + sizeX, 0, videoPlayer.getWidth());
+						}
+					}
+					
+					// TAMAÑO DE BLOQUE
+					if(distortionAmount >= 0.9 && ofRandom(1) < 0.25){
+						sizeY = 4 * (3 + distortionAmount*6);
+						sizeX = sizeY * (int)ofRandom(3);
+					}
+					else{
+						sizeY = 2 * (3 + distortionAmount*6);
+						sizeX = sizeY * (int)ofRandom(2);
+					}
 				}
 
 				// CALCULO COLOR DE PIXEL
 				ofColor pixelColor = texturePixels.getColor(x, y);
 				
-				// TAMAÑO DE BLOQUE
-				sizeX = ofRandom(8, 10);
-				sizeY = ofRandom(8, 10);
+				float  ran = ofRandom(1);
 				
-				// CORRUPCION MAS FUERTE - COLOR
-				if(distortionAmount > 0.8){
-					if(pixelColor.getBrightness() > 80){
+			// BLOQUES NEGROS - DISTORSION MUY GRANDE
+				if(distortionAmount >= 0.9 && sizeX > 33){
+					ofSetColor(0, 0, 0, 255);
+							
+					ofDrawRectangle(
+						x, y,
+						sizeX, sizeY
+					);
+				}
+			// CORRUPCION MAS FUERTE - COLOR
+				else if(((distortionAmount >= 0.8 && ran < 0.8)) || (pixelColor.getBrightness() > 50 && ofRandom(1.5) < distortionAmount)){
+					
+					if(pixelColor.getBrightness() > ofRandom(10, 100*distortionAmount)){
 						
 						// DESPLAZAMIENTO DE BLOQUES + COLOREADO (PARA PIXELES NO TAN CLAROS)
-						if(pixelColor.getBrightness() < 200 || i % (int)ofRandom(10, 30) < 10){
+						if(pixelColor.getBrightness() < 200 || x % (int)ofRandom(10, 30) < 10){
 							int dx = x + ofRandom(-5, 5);
 							int dy = y + ofRandom(-5, 5);
+							
 							
 							ofSetColor(color_corrupcion);
 								
 							glitchTexture.drawSubsection(
-								dx, dy,
+								x+sizeX*(int)ofRandom(-1*distortionAmount, 1*distortionAmount), y,
 								sizeX, sizeY,
-								x, y,
+								dx, dy,
 								sizeX, sizeY
 							);
 							
 						}
 						else{
-							// SI EL PIXEL NO ES CLARO PINTO TODO EL BLOQUE DEL COLOR CORRUPTO
-							if(pixelColor.getBrightness() < 200){
-								ofSetColor(color_corrupcion.r, color_corrupcion.g, color_corrupcion.b, 255);
+							if(ofRandom(0.9) > distortionAmount){
+								// SI EL PIXEL NO ES CLARO PINTO TODO EL BLOQUE DEL COLOR CORRUPTO
+								if(pixelColor.getBrightness() < 200 ){
+									ofSetColor(color_corrupcion.r, color_corrupcion.g, color_corrupcion.b, 255);
+								}
+								// SI EL PIXEL ES CLARO LE SUBO MUCHO EL BRILLO
+								else if(pixelColor.getBrightness() > 200){
+									ofColor color_corrupcion_brillo = color_corrupcion;
+									//color_corrupcion_brillo.setBrightness(255);
+									color_corrupcion_brillo.setHsb(color_corrupcion_brillo.getHue(), 255, 252);
+									ofSetColor(color_corrupcion_brillo);
+								}
 							}
-							// SI EL PIXEL ES CLARO LE SUBO MUCHO EL BRILLO
+							// BLOQUE NEGRO	
 							else{
-								ofColor color_corrupcion_brillo = color_corrupcion;
-								//color_corrupcion_brillo.setBrightness(255);
-								color_corrupcion_brillo.setHsb(color_corrupcion_brillo.getHue(), 255, 252);
-								ofSetColor(color_corrupcion_brillo);
+								ofSetColor(0, 0, 0, 255);
 							}
 							
 							ofDrawRectangle(
@@ -592,25 +648,34 @@ void ofApp::applyGlitchEffect() {
 							);
 						}
 					}
-					// BLOQUES NEGROS
-					else if(ofRandom(1) > 0.9){
-						ofSetColor(0, 0, 0, 255);
-						ofDrawRectangle(
-							x, y,
-							sizeX, sizeY
-						);
-					}
 				}
 				
 				// PIXELADO
-				else if(distortionAmount > 0.1 && i % (int)ofRandom(2, 10) < 5){
+				else if(distortionAmount >= 0.1 && (x*5) % (int)ofRandom(1, 5*distortionAmount) < 1){
 					
+					/*if(distortionAmount >= 0.3 && ((i*15) % sizeX*25) < 1){
+						ofSetColor(color_corrupcion);
+					}
+					else{
+						ofSetColor(pixelColor);
+					}*/
 					ofSetColor(pixelColor);
 					ofDrawRectangle(
-						x, y,
+						x+ofRandom(2), y+ofRandom(2),
 						sizeX, sizeY
 					);
 				}
+			}
+			// BLOQUES NEGROS
+			if(ofRandom(1) > 0.7){
+				sizeX = ofRandom(8, 15);
+				sizeY = ofRandom(8, 15);
+					
+				ofSetColor(0, 0, 0, 255);
+				ofDrawRectangle(
+					x, y,
+					sizeX, sizeY
+				);
 			}
 			
 			glitchFbo.end();
@@ -635,7 +700,6 @@ void ofApp::exit() {
 	
 }
 
-
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
 
@@ -654,7 +718,6 @@ void ofApp::mouseDragged(int x, int y, int button){
 void ofApp::mousePressed(int x, int y, int button){
 	
 }
-
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
