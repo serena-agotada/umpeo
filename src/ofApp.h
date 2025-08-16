@@ -4,6 +4,7 @@
 #include "ofxOsc.h"
 #include "Etiqueta.h"
 #include "RectEtiqueta.h"
+#include "CuadrillaEtiqueta.h"
 
 // send host (aka ip address)
 #define HOST "localhost"
@@ -23,6 +24,7 @@ class ofApp : public ofBaseApp{
 		void applyGlitchEffect();
 		void dibujarEtiquetas(int x, int y, int w, int h);
 		void dibujarBarraProgreso(int xx, int yy, float porcentaje);
+		void dibujarDeteccion();
 		
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -64,12 +66,16 @@ class ofApp : public ofBaseApp{
 		int dist_dial;
 		int tam_dial;
 		vector<Etiqueta> etiquetasVideos[59];
-		RectEtiqueta grilla[52][18];
+		CuadrillaEtiqueta grilla[52][18];
 		int i_etiqueta;
 		float pos_prox_etiqueta;
 		ofColor colores_etiquetas[100];
 		vector<string> displayEtiquetas;
 		int inicio_linea_corrupta;
+		vector<RectEtiqueta> deteccionesEtiquetas[59];
+		ofJson js;
+		int ultimoRectEtiqueta;
+		vector<int> frame_ids_detectados;
 
 		ofxOscReceiver receiver;
 };

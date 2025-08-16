@@ -58,7 +58,7 @@ void ofApp::setup(){
 	}
     
 // ETIQUETAS ------------------------------------------------------------------------------	
-
+ofLog() << "Cargando grilla de etiquetas...";
 		// Colores etiquetas
 		ofColor c1 = ofColor::fromHex(0x001f34);
 		ofColor c2 = ofColor::fromHex(0x40c258);
@@ -110,7 +110,7 @@ void ofApp::setup(){
 
 	// Recorrer la lista de archivos y almacenarlos en etiquetasVideos
 	for (int i = 0; i < cantVideos; i++) {
-		//Load file
+	// -- grilla colores
 		ofFile file("/home/sara/Desktop/etiquetas-umpeo/Copia de labels - " + ofToString(i) +".csv");
 		
 		ofBuffer buffer(file);
@@ -138,7 +138,74 @@ void ofApp::setup(){
 
 				cont++;
 			}
-		}	
+		}
+		
+	// -- deteccion de objetos
+		
+		if(i != 1 && i != 8 && i < 11){
+			ofFile file("/home/sara/Desktop/resultados-rekognition/" + ofToString(i) +".json");
+			if(file.exists()){
+				int id = 0;
+				
+				file >> js; //Reads the JSON data from the file into a ofJson object (variable js)
+				if (js.contains("VideoMetadata") && !js["VideoMetadata"].is_null()){
+					int duracion = js["VideoMetadata"]["DurationMillis"];
+					
+					// Access the "Labels" array
+					for (auto& labelItem : js["Labels"]) {
+					    // Access Label object
+					    if (labelItem.contains("Label") && !labelItem["Label"].is_null()){
+						    //ofLog() << "cargando archivo de etiquetas";
+						    
+							
+						    ofJson label = labelItem["Label"];
+						    if (label.contains("Instances") && !label["Instances"].is_null() && label["Instances"].size() > 0){
+							    
+								float timestamp = ofMap(labelItem["Timestamp"], 0, duracion, 0, 1);
+								string name = label["Name"];
+								float confidence = label["Confidence"];
+							    
+							    // Access Instances array
+								for (auto& instance : label["Instances"]) {
+									float ins_confidence = instance["Confidence"];
+									
+									if(ins_confidence > 50){
+										RectEtiqueta e;
+										e.id = id;
+										e.name = name;
+										e.timestamp = timestamp;
+										timestamp+=0.015;
+									
+										// Access BoundingBox
+										ofJson bbox = instance["BoundingBox"];
+												
+										e.width = bbox["Width"];
+										e.height = bbox["Height"];
+										e.left = bbox["Left"];
+										e.top = bbox["Top"];
+									
+										// Access Instance Confidence
+										e.confidence = ins_confidence;
+										
+										deteccionesEtiquetas[i].push_back(e);
+									}
+								}
+								
+						    }
+						    //else ofLog() << "La etiqueta no tiene instancias!";
+						}
+						else ofLog() << "El archivo no tiene etiquetas!";
+						
+						id++;
+					}
+					
+				}
+				else ofLog() << "El archivo no tiene duracion!";
+				
+			}
+			else ofLog() << "El archivo de etiquetas " << i << " no existe!";
+		}
+	
 	}
 	ofLog() << "Etiquetas cargadas";
 	
@@ -166,7 +233,7 @@ void ofApp::setup(){
 	
 	inicio_linea_corrupta = 0;
 	
-	
+	ultimoRectEtiqueta = 0;
 }
 
 //--------------------------------------------------------------
@@ -235,6 +302,7 @@ void ofApp::draw(){
 		if (newIndex != currentVideoIndex) {
 			//ofLog() << "nuevo indice: " << newIndex;
 			currentVideoIndex = newIndex;
+			
 			//videoPlayer.close();
 			videoPlayer.load(videoFiles[currentVideoIndex]);
 			
@@ -258,6 +326,7 @@ void ofApp::draw(){
 				fbo.clear();
 				fbo.allocate(videoPlayer.getWidth(), videoPlayer.getHeight());
 			}
+			ultimoRectEtiqueta = 0;
 			
 		}
 
@@ -322,6 +391,8 @@ void ofApp::draw(){
 				lastValidFrame = videoPlayer.getTexture();
 			}
 			
+			dibujarDeteccion();
+			
     
 		}
 		else {
@@ -382,7 +453,7 @@ void ofApp::draw(){
 	//dibujarBarraProgreso(20, offsetVideoPosY+25, ofMap(oscuridad, 0, 240, 100, 0, true));
 	
 	ofSetColor(255);
-	ofDrawBitmapString("Archivo recuperado:" + ofToString(ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, offsetVideoPosY+60);
+	ofDrawBitmapString("Archivo recuperado:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, offsetVideoPosY+60);
 	
 	//dibujarBarraProgreso(20, offsetVideoPosY+65, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
@@ -394,7 +465,34 @@ void ofApp::draw(){
 	
 	//ofDrawBitmapString(textoDerecha, 20, offsetVideoPosY+160); 
 	
-	dibujarEtiquetas( ofGetWidth()-offsetVideoPosX+10, offsetVideoPosY, offsetVideoPosX, (ofGetHeight()/3)*2-offsetVideoPosY*2) ;
+	//dibujarEtiquetas( ofGetWidth()-offsetVideoPosX+10, offsetVideoPosY, offsetVideoPosX, (ofGetHeight()/3)*2-offsetVideoPosY*2) ;
+}
+
+void ofApp::dibujarDeteccion(){
+	if(distortionAmount < 0.25 && currentVideoIndex != 1 && currentVideoIndex < 11){
+		frame_ids_detectados.clear();
+		
+		float min_conf = ofMap(distortionAmount, 0.95, 0, 0, 90, true);
+		float amp_conf = ofMap(distortionAmount, 1, 0, 5, 20);
+		
+		for(int i = deteccionesEtiquetas[currentVideoIndex].size()-1; i >= 0 && deteccionesEtiquetas[currentVideoIndex][i].timestamp > videoPlayer.getPosition()-0.35; i--){
+			
+			RectEtiqueta e = deteccionesEtiquetas[currentVideoIndex][i];
+			
+			if(e.confidence > min_conf && e.confidence < min_conf+amp_conf && e.timestamp < videoPlayer.getPosition()+0.03 && e.timestamp > videoPlayer.getPosition()-0.03){
+				
+				if(frame_ids_detectados.empty() || find(frame_ids_detectados.begin(), frame_ids_detectados.end(), e.id) == frame_ids_detectados.end()){
+					deteccionesEtiquetas[currentVideoIndex][i].dibujar(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, offsetVideoPosX, offsetVideoPosY);
+					
+					ultimoRectEtiqueta = i;
+					
+					frame_ids_detectados.push_back(e.id);
+				}
+			}
+			
+		}
+		
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------
