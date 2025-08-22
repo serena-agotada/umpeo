@@ -16,9 +16,15 @@ void RectEtiqueta::actualizar() {
 
 void RectEtiqueta::dibujar(ofTrueTypeFont font, float w, float h, int offX, int offY) {
     //ofLog() << width << " " << left << " " << w;
-	ofNoFill();
 	
+	ofColor col = ofColor(0);
+	col.setHsb(ofMap(confidence, 45, 100, 0, 150), ofMap(confidence, 10, 100, 0, 255), ofMap(confidence, 10, 100, 0, 250));
+	
+	ofSetLineWidth(5);
+	ofSetColor(col);
+	ofNoFill();
 	ofDrawRectangle(left*w+offX, top*h+offY, width*w, height*h);
-	font.drawString(ofToString(id) + name, left*w+offX+5, top*h+offY-10);
-	font.drawString(ofToString((int)confidence), left*w+offX+5, top*h+offY+15);
+	
+	font.drawString(name, left*w+offX+5, top*h+offY-10);
+	//font.drawString(ofToString((int)confidence), left*w+offX+5, top*h+offY+15);
 }

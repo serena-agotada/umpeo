@@ -109,6 +109,7 @@ ofLog() << "Cargando grilla de etiquetas...";
 			n_linea++;
 		}
 		ofLog() << "Grilla de etiquetas cargada";
+		
 
 	// Recorrer la lista de archivos y almacenarlos en etiquetasVideos
 	for (int i = 0; i < cantVideos; i++) {
@@ -166,12 +167,16 @@ ofLog() << "Cargando grilla de etiquetas...";
 								float timestamp = ofMap(labelItem["Timestamp"], 0, duracion, 0, 1);
 								string name = label["Name"];
 								float confidence = label["Confidence"];
+								
+								if(!label["Instances"].is_null()){
+									
+								}
 							    
 							    // Access Instances array
 								for (auto& instance : label["Instances"]) {
 									float ins_confidence = instance["Confidence"];
 									
-									if(ins_confidence > 50){
+									if(ins_confidence > 20){
 										RectEtiqueta e;
 										e.id = id;
 										e.name = name;
@@ -189,12 +194,33 @@ ofLog() << "Cargando grilla de etiquetas...";
 										// Access Instance Confidence
 										e.confidence = ins_confidence;
 										
-										deteccionesEtiquetas[i].push_back(e);
+										// si no se superpone con la etiqueta anterior
+										bool resuelto = false;
+										if(!deteccionesEtiquetas[i].empty()){
+											
+											for(int j = deteccionesEtiquetas[i].size()-1; deteccionesEtiquetas[i][j].timestamp >= e.timestamp-0.07 && j > 0; j--){
+												
+												
+												// encuentra un objeto en el mismo lugar
+												if(deteccionesEtiquetas[i][j].left == e.left && deteccionesEtiquetas[i][j].top == e.top){
+													ofLog() << deteccionesEtiquetas[i][j].name << e.name;
+													
+													//lo reemplaza si confidence es mayor
+													if(deteccionesEtiquetas[i][j].confidence < e.confidence) deteccionesEtiquetas[i][j] = e;
+													
+													// si no, deja el objeto anterior pero no guarda el nuevo
+													resuelto = true;
+												}
+											}
+										}
+										
+										if(!resuelto) deteccionesEtiquetas[i].push_back(e);
+										else ofLog() << "resuelto";
+										
 									}
 								}
 								
 						    }
-						    //else ofLog() << "La etiqueta no tiene instancias!";
 						}
 						else ofLog() << "El archivo no tiene etiquetas!";
 						
@@ -451,13 +477,11 @@ void ofApp::draw(){
 	ofSetColor(255);
 	texto.drawString("Reproduccion: " + ofToString((int)ofGetFrameRate()) , 20, offsetVideoPosY);
 	texto.drawString("Actividad:" + ofToString(ofMap(oscuridad, 0, 240, 100, 0, true)) + "%" , 20, offsetVideoPosY+20);
-	
-	//dibujarBarraProgreso(20, offsetVideoPosY+25, ofMap(oscuridad, 0, 240, 100, 0, true));
+	dibujarBarraProgreso(20, offsetVideoPosY+25, ofMap(oscuridad, 0, 240, 100, 0, true));
 	
 	ofSetColor(255);
 	texto.drawString("Archivo recuperado:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, offsetVideoPosY+60);
-	
-	//dibujarBarraProgreso(20, offsetVideoPosY+65, ofMap(distortionAmount, 0, 1, 100, 0, true));
+	dibujarBarraProgreso(20, offsetVideoPosY+65, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
 	ofSetColor(255);
 	//ofDrawBitmapString("Memoria recuperada: " + string(videoPlayer.isLoaded() ? "SI" : "NO"), 20, offsetVideoPosY+100);
@@ -474,8 +498,8 @@ void ofApp::dibujarDeteccion(){
 	if(distortionAmount < 0.25 && currentVideoIndex != 1 && currentVideoIndex < 11){
 		frame_ids_detectados.clear();
 		
-		float min_conf = ofMap(distortionAmount, 0.95, 0, 0, 90, true);
-		float amp_conf = ofMap(distortionAmount, 1, 0, 5, 20);
+		float min_conf = ofMap(distortionAmount, 0.95, 0, 0, 70, true);
+		float amp_conf = ofMap(distortionAmount, 1, 0, 5, 30);
 		
 		for(int i = deteccionesEtiquetas[currentVideoIndex].size()-1; i >= 0 && deteccionesEtiquetas[currentVideoIndex][i].timestamp > videoPlayer.getPosition()-0.35; i--){
 			
