@@ -23,7 +23,7 @@ class ofApp : public ofBaseApp{
 		
 		void applyGlitchEffect();
 		void dibujarEtiquetas(int x, int y, int w, int h);
-		void dibujarBarraProgreso(int xx, int yy, float porcentaje);
+		void dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje);
 		void dibujarDeteccion();
 		
 		void keyPressed(int key);

@@ -475,13 +475,13 @@ void ofApp::draw(){
 	
 	
 	ofSetColor(255);
-	texto.drawString("Reproduccion: " + ofToString((int)ofGetFrameRate()) , 20, offsetVideoPosY);
-	texto.drawString("Actividad:" + ofToString(ofMap(oscuridad, 0, 240, 100, 0, true)) + "%" , 20, offsetVideoPosY+20);
-	dibujarBarraProgreso(20, offsetVideoPosY+25, ofMap(oscuridad, 0, 240, 100, 0, true));
+	//texto.drawString("Reproduccion: " + ofToString((int)ofGetFrameRate()) , 20, offsetVideoPosY);
+	texto.drawString("Actividad:" + ofToString(ofMap(oscuridad, 0, 240, 100, 0, true)) + "%" , 20, 40);
+	dibujarBarraProgreso(20, 45, offsetVideoPosX-40, ofMap(oscuridad, 0, 240, 100, 0, true));
 	
 	ofSetColor(255);
-	texto.drawString("Archivo recuperado:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, offsetVideoPosY+60);
-	dibujarBarraProgreso(20, offsetVideoPosY+65, ofMap(distortionAmount, 0, 1, 100, 0, true));
+	texto.drawString("Fidelidad:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, 100);
+	dibujarBarraProgreso(20, 105, offsetVideoPosX-40, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
 	ofSetColor(255);
 	//ofDrawBitmapString("Memoria recuperada: " + string(videoPlayer.isLoaded() ? "SI" : "NO"), 20, offsetVideoPosY+100);
@@ -814,6 +814,14 @@ void ofApp::applyGlitchEffect() {
     }
 }
 
+void ofApp::dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje){
+	ofSetColor(100);
+	ofDrawRectangle(xx, yy, ww, 20);
+	
+	int ancho_progreso = ofMap(porcentaje, 0, 100, 0, ww);
+	ofSetColor(10, 255, 100);
+	ofDrawRectangle(xx, yy, ancho_progreso, 20);
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed  (int key){
