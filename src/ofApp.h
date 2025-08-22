@@ -76,6 +76,7 @@ class ofApp : public ofBaseApp{
 		ofJson js;
 		int ultimoRectEtiqueta;
 		vector<int> frame_ids_detectados;
+		ofTrueTypeFont texto;
 
 		ofxOscReceiver receiver;
 };

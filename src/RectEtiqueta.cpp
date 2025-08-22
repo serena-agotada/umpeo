@@ -14,11 +14,11 @@ void RectEtiqueta::actualizar() {
     
 }
 
-void RectEtiqueta::dibujar(float w, float h, int offX, int offY) {
+void RectEtiqueta::dibujar(ofTrueTypeFont font, float w, float h, int offX, int offY) {
     //ofLog() << width << " " << left << " " << w;
 	ofNoFill();
 	
 	ofDrawRectangle(left*w+offX, top*h+offY, width*w, height*h);
-	ofDrawBitmapString(ofToString(id) + name, left*w+offX+5, top*h+offY-10);
-	ofDrawBitmapString((int)confidence, left*w+offX+5, top*h+offY+15);
+	font.drawString(ofToString(id) + name, left*w+offX+5, top*h+offY-10);
+	font.drawString(ofToString((int)confidence), left*w+offX+5, top*h+offY+15);
 }

@@ -14,6 +14,8 @@ void ofApp::setup(){
 	dist_dial = (int) ofGetWidth()/cantVideos/2.5;
 	
 	videoFiles.reserve(cantVideos);
+	
+	texto.load("UbuntuMono-Regular.ttf", 14, true, true);
 
 // VIDEO
 	
@@ -447,13 +449,13 @@ void ofApp::draw(){
 	
 	
 	ofSetColor(255);
-	ofDrawBitmapString("Reproduccion: " + ofToString((int)ofGetFrameRate()) , 20, offsetVideoPosY);
-	ofDrawBitmapString("Actividad:" + ofToString(ofMap(oscuridad, 0, 240, 100, 0, true)) + "%" , 20, offsetVideoPosY+20);
+	texto.drawString("Reproduccion: " + ofToString((int)ofGetFrameRate()) , 20, offsetVideoPosY);
+	texto.drawString("Actividad:" + ofToString(ofMap(oscuridad, 0, 240, 100, 0, true)) + "%" , 20, offsetVideoPosY+20);
 	
 	//dibujarBarraProgreso(20, offsetVideoPosY+25, ofMap(oscuridad, 0, 240, 100, 0, true));
 	
 	ofSetColor(255);
-	ofDrawBitmapString("Archivo recuperado:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, offsetVideoPosY+60);
+	texto.drawString("Archivo recuperado:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, offsetVideoPosY+60);
 	
 	//dibujarBarraProgreso(20, offsetVideoPosY+65, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
@@ -482,7 +484,7 @@ void ofApp::dibujarDeteccion(){
 			if(e.confidence > min_conf && e.confidence < min_conf+amp_conf && e.timestamp < videoPlayer.getPosition()+0.03 && e.timestamp > videoPlayer.getPosition()-0.03){
 				
 				if(frame_ids_detectados.empty() || find(frame_ids_detectados.begin(), frame_ids_detectados.end(), e.id) == frame_ids_detectados.end()){
-					deteccionesEtiquetas[currentVideoIndex][i].dibujar(videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, offsetVideoPosX, offsetVideoPosY);
+					deteccionesEtiquetas[currentVideoIndex][i].dibujar(texto, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, offsetVideoPosX, offsetVideoPosY);
 					
 					ultimoRectEtiqueta = i;
 					
