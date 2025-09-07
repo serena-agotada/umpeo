@@ -94,62 +94,13 @@ ofLog() << "Cargando grilla de etiquetas...";
 		ofBuffer buffer(file);
 
 		int n_linea = 0;
-
-		//Generar grilla de etiquetas
-		for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
-			string line = *it;
-			//Split line into strings
-			vector<string> et = ofSplitString(line, ",");
-
-			//guardo cada nombre en el array y seteo el color a negro
-			for(int x=0; x < 18; x++) {
-				grilla[n_linea][x].nombre = et[x];
-				grilla[n_linea][x].color = ofColor(0);
-			}
-
-			n_linea++;
-		}
-		ofLog() << "Grilla de etiquetas cargada";
 		
 
 	// Recorrer la lista de archivos y almacenarlos en etiquetasVideos
 	for (int i = 0; i < cantVideos; i++) {
-	// -- grilla colores
-		ofFile file("/home/sara/Desktop/etiquetas-umpeo/Copia de labels - " + ofToString(i) +".csv");
-		
-		ofBuffer buffer(file);
-		
-		ofBuffer::Lines lines = buffer.getLines(); // Obtener las líneas como iterable
-		int numLines = std::distance(lines.begin(), lines.end()); // Cuenta las líneas eficientemente
-
-		int cont = 0;
-
-		//Read file line by line
-		for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
-			string line = *it;
-			//Split line into strings
-			vector<string> words = ofSplitString(line, ",");
-
-			//Store strings into a custom container
-			if (words.size()>=3) {
-				Etiqueta e;
-				e.nombre = words[1];
-				e.confianza = (float)stoi(words[2]);
-				e.posicion = ofMap(cont, 0, numLines, 0, 1);
-
-				//guardar etiqueta
-				etiquetasVideos[i].push_back(e);
-
-				cont++;
-			}
-		}
-		
 	// -- deteccion de objetos
-		
-		if(i < cantVideos){
 			ofFile file("/home/sara/Desktop/una-maquina-para-el-olvido/Etiquetas/" + ofToString(i) +".json");
 			if(file.exists()){
-				ofLog() << "cargando archivo de etiquetas " << i;
 				int id = 0;
 				
 				file >> js; //Reads the JSON data from the file into a ofJson object (variable js)
@@ -230,7 +181,6 @@ ofLog() << "Cargando grilla de etiquetas...";
 				
 			}
 			else ofLog() << "El archivo de etiquetas " << i << " no existe!";
-		}
 	
 	}
 	ofLog() << "Etiquetas cargadas";
@@ -454,14 +404,6 @@ void ofApp::draw(){
 	dibujarBarraProgreso(20, 105, offsetVideoPosX-40, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
 	ofSetColor(255);
-	//ofDrawBitmapString("Memoria recuperada: " + string(videoPlayer.isLoaded() ? "SI" : "NO"), 20, offsetVideoPosY+100);
-	//ofDrawBitmapString("Indice: " + ofToString(currentVideoIndex) , 20, offsetVideoPosY+120);
-	//ofDrawBitmapString("aTextura: " + string(videoTexture.isAllocated() ? "SI" : "NO"), 20, offsetVideoPosY+80);
-	//ofDrawBitmapString("aFBO: " + string(fbo.isAllocated() ? "SI" : "NO"), 20, offsetVideoPosY+100);
-	
-	//ofDrawBitmapString(textoDerecha, 20, offsetVideoPosY+160); 
-	
-	//dibujarEtiquetas( ofGetWidth()-offsetVideoPosX+10, offsetVideoPosY, offsetVideoPosX, (ofGetHeight()/3)*2-offsetVideoPosY*2) ;
 }
 
 void ofApp::dibujarDeteccion(){

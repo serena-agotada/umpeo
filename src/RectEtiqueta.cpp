@@ -28,9 +28,9 @@ void RectEtiqueta::dibujar(ofTrueTypeFont font, float w, float h, int offX, int 
 	ofRectangle rect = font.getStringBoundingBox(name, 0,0);
 	ofFill();
 	//ofNoStroke();
-	ofDrawRectangle(left*w+offX, top*h+offY-rect.height-10, rect.width+10, rect.height+10);
+	ofDrawRectangle(left*w+offX, top*h+offY-rect.height+10, rect.width+10, rect.height+10);
 	
 	ofSetColor(255);
-	font.drawString(name, left*w+offX+5, top*h+offY-7);
+	font.drawString(name, left*w+offX+5, top*h+offY+10);
 	//font.drawString(ofToString((int)confidence), left*w+offX+5, top*h+offY+15);
 }
