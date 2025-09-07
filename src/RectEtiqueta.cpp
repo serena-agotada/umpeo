@@ -18,7 +18,7 @@ void RectEtiqueta::dibujar(ofTrueTypeFont font, float w, float h, int offX, int 
     //ofLog() << width << " " << left << " " << w;
 	
 	ofColor col = ofColor(0);
-	col.setHsb(ofMap(confidence, 45, 100, 0, 150), ofMap(confidence, 10, 100, 0, 255), ofMap(confidence, 10, 100, 0, 250));
+	col.setHsb(ofMap(confidence, 45, 100, 0, 150), ofMap(confidence, 15, 100, 0, 255), ofMap(confidence, 15, 100, 0, 250));
 	
 	ofSetLineWidth(5);
 	ofSetColor(col);

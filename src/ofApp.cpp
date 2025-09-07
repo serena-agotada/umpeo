@@ -4,35 +4,36 @@
 void ofApp::setup(){
 	
 // VARIABLES DE SETTEO ---------------------------------------------------------
+
+	ofSetWindowTitle("run file_analysis()");
 	
-	cantVideos = 58;
-	
-	resizeVideo = 0.85;
-	
-	tam_dial = cantVideos * 30;
-	
-	dist_dial = (int) ofGetWidth()/cantVideos/2.5;
-	
-	videoFiles.reserve(cantVideos);
+	resizeVideo = 0.99;
 	
 	texto.load("UbuntuMono-Regular.ttf", 14, true, true);
 
 // VIDEO
 	
-    videoPlayer.setUseTexture(true);
+	videoPlayer.setUseTexture(true);
 
 	shouldSetPosition = false;
 
 	// Definir el directorio de los videos
-	ofDirectory dir("/home/sara/Desktop/videos-umpeo");
+	ofDirectory dir("/home/sara/Desktop/una-maquina-para-el-olvido/Videos/");
 	dir.allowExt("mp4");  // Filtra solo archivos con la extensión .mp4
 
 	// Lista de archivos en el directorio
 	dir.listDir();
+	cantVideos = dir.size();
+	ofLog() << cantVideos;
+	tam_dial = cantVideos * 30;
+	dist_dial = (int) ofGetWidth()/cantVideos/2.5;
+	videoFiles.reserve(cantVideos);
+	deteccionesEtiquetas.resize(cantVideos);
+	etiquetasVideos.resize(cantVideos);
 
 	// Recorrer la lista de archivos y almacenarlos en videoFiles
 	for (int i = 0; i < cantVideos; i++) {
-		videoFiles.push_back("/home/sara/Desktop/videos-umpeo/" + ofToString(i) +".mp4");
+		videoFiles.push_back("/home/sara/Desktop/una-maquina-para-el-olvido/Videos/" + ofToString(i) +".mp4");
 		videoPositions.push_back(0.0f);
 	}
 
@@ -145,9 +146,10 @@ ofLog() << "Cargando grilla de etiquetas...";
 		
 	// -- deteccion de objetos
 		
-		if(i != 1 && i != 8 && i < 11){
-			ofFile file("/home/sara/Desktop/resultados-rekognition/" + ofToString(i) +".json");
+		if(i < cantVideos){
+			ofFile file("/home/sara/Desktop/una-maquina-para-el-olvido/Etiquetas/" + ofToString(i) +".json");
 			if(file.exists()){
+				ofLog() << "cargando archivo de etiquetas " << i;
 				int id = 0;
 				
 				file >> js; //Reads the JSON data from the file into a ofJson object (variable js)
@@ -158,9 +160,7 @@ ofLog() << "Cargando grilla de etiquetas...";
 					for (auto& labelItem : js["Labels"]) {
 					    // Access Label object
 					    if (labelItem.contains("Label") && !labelItem["Label"].is_null()){
-						    //ofLog() << "cargando archivo de etiquetas";
 						    
-							
 						    ofJson label = labelItem["Label"];
 						    if (label.contains("Instances") && !label["Instances"].is_null() && label["Instances"].size() > 0){
 							    
@@ -169,57 +169,55 @@ ofLog() << "Cargando grilla de etiquetas...";
 								float confidence = label["Confidence"];
 								
 								if(!label["Instances"].is_null()){
-									
-								}
-							    
-							    // Access Instances array
-								for (auto& instance : label["Instances"]) {
-									float ins_confidence = instance["Confidence"];
-									
-									if(ins_confidence > 20){
-										RectEtiqueta e;
-										e.id = id;
-										e.name = name;
-										e.timestamp = timestamp;
-										timestamp+=0.015;
-									
-										// Access BoundingBox
-										ofJson bbox = instance["BoundingBox"];
-												
-										e.width = bbox["Width"];
-										e.height = bbox["Height"];
-										e.left = bbox["Left"];
-										e.top = bbox["Top"];
-									
-										// Access Instance Confidence
-										e.confidence = ins_confidence;
+								    // Access Instances array
+									for (auto& instance : label["Instances"]) {
+										float ins_confidence = instance["Confidence"];
 										
-										// si no se superpone con la etiqueta anterior
-										bool resuelto = false;
-										if(!deteccionesEtiquetas[i].empty()){
+										if(ins_confidence > 20){
+											RectEtiqueta e;
+											e.id = id;
+											e.name = name;
+											e.timestamp = timestamp;
+											timestamp+=0.015;
+										
+											// Access BoundingBox
+											ofJson bbox = instance["BoundingBox"];
+													
+											e.width = bbox["Width"];
+											e.height = bbox["Height"];
+											e.left = bbox["Left"];
+											e.top = bbox["Top"];
+										
+											// Access Instance Confidence
+											e.confidence = ins_confidence;
 											
-											for(int j = deteccionesEtiquetas[i].size()-1; deteccionesEtiquetas[i][j].timestamp >= e.timestamp-0.07 && j > 0; j--){
-												
-												
-												// encuentra un objeto en el mismo lugar
-												if(deteccionesEtiquetas[i][j].left == e.left && deteccionesEtiquetas[i][j].top == e.top){
-													ofLog() << deteccionesEtiquetas[i][j].name << e.name;
+											// si no se superpone con la etiqueta anterior
+											bool resuelto = false;
+											if(!deteccionesEtiquetas[i].empty()){
+												for(int j = deteccionesEtiquetas[i].size()-1; j >= 0; j--){
 													
-													//lo reemplaza si confidence es mayor
-													if(deteccionesEtiquetas[i][j].confidence < e.confidence) deteccionesEtiquetas[i][j] = e;
+													if(deteccionesEtiquetas[i][j].timestamp >= e.timestamp-0.07) {
+													    // encuentra un objeto en el mismo lugar
+														if(deteccionesEtiquetas[i][j].left == e.left && deteccionesEtiquetas[i][j].top == e.top){
+															//lo reemplaza si confidence es mayor
+															if(deteccionesEtiquetas[i][j].confidence < e.confidence) deteccionesEtiquetas[i][j] = e;
+															
+															// si no, deja el objeto anterior pero no guarda el nuevo
+															resuelto = true;
+														}
+													}
+													else break;
 													
-													// si no, deja el objeto anterior pero no guarda el nuevo
-													resuelto = true;
+													
 												}
 											}
+											
+											if(!resuelto) deteccionesEtiquetas[i].push_back(e);
+											//else ofLog() << "resuelto";
+											
 										}
-										
-										if(!resuelto) deteccionesEtiquetas[i].push_back(e);
-										else ofLog() << "resuelto";
-										
 									}
 								}
-								
 						    }
 						}
 						else ofLog() << "El archivo no tiene etiquetas!";
@@ -314,7 +312,7 @@ void ofApp::update(){
 		}
 	}
 	
-	offsetVideoPosX = ( (float)(ofGetWidth()) - (float)videoPlayer.getWidth()*resizeVideo) / 2;
+	offsetVideoPosX = ( (float)(ofGetWidth()) - (float)videoPlayer.getWidth()*resizeVideo);
 	offsetVideoPosY = ( (float)(ofGetHeight()) - (float)videoPlayer.getHeight()*resizeVideo) / 2 - 10;
 	
 }
@@ -435,36 +433,8 @@ void ofApp::draw(){
 			ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 		}
 		
-		int xSensor = ofMap(sensor, 0, tam_dial, 0, ofGetWidth()); // valor traducido en x del sensor
+		dibujarBarraRecorrido();
 		
-		// fondo barra inferior
-		ofSetColor(50, 60, 70);
-		ofDrawRectangle(0, ofGetHeight()-20, ofGetWidth(), ofGetHeight());
-	
-		for (int i = 0; i < cantVideos - 1; i++) {
-			
-			float div = ((float)ofGetWidth() / (float)(cantVideos -2));
-
-			int xSints = i * div;
-			
-			// marcas de sintonizacion
-			if( abs(xSensor - xSints) < dist_dial/2 ){
-				ofFill(); ofSetColor(190, 195, 200);
-				ofDrawRectangle(xSints-(dist_dial*1.2/2), ofGetHeight()-24, dist_dial*1.2, ofGetHeight());
-				
-				ofDrawBitmapString("0x"+ ofToString(currentVideoIndex) + "aa" + ofToString(distSintVideo) + "c" + ofToString((int) ofMap(distortionAmount, 0, 1, 100, 999)) , xSints-5, ofGetHeight()-30);
-			}
-			else{
-				ofFill(); ofSetColor(150, 160, 180);
-				ofDrawRectangle(xSints-(dist_dial/2), ofGetHeight()-20, dist_dial, ofGetHeight());
-			}
-		}
-		
-		// barra valor sensor
-		ofFill(); ofSetColor(255, (int)ofMap(oscuridad, 0, 240, 255, 5));
-		ofDrawRectangle(xSensor, ofGetHeight()-20, 2, ofGetHeight());
-		
-
 	}
 	else{
 		//ofSetColor(255, 255, 255, 180);
@@ -495,7 +465,7 @@ void ofApp::draw(){
 }
 
 void ofApp::dibujarDeteccion(){
-	if(distortionAmount < 0.25 && currentVideoIndex != 1 && currentVideoIndex < 11){
+	if(distortionAmount < 0.25){
 		frame_ids_detectados.clear();
 		
 		float min_conf = ofMap(distortionAmount, 0.95, 0, 0, 70, true);
@@ -611,7 +581,7 @@ void ofApp::applyGlitchEffect() {
 			int x = 0;
 			int alto_linea = videoPlayer.getHeight() * distortionAmount;
 			if(ofRandom(1) > 0.98*distortionAmount){
-				inicio_linea_corrupta = ofRandom(videoPlayer.getHeight() - alto_linea);
+				inicio_linea_corrupta = ofRandom(videoPlayer.getHeight() - alto_linea - ofRandom(0, videoPlayer.getHeight() - alto_linea));
 			}
 			int y = ofRandom(inicio_linea_corrupta/5);
 			
@@ -718,7 +688,7 @@ void ofApp::applyGlitchEffect() {
 				float  ran = ofRandom(1);
 				
 			// BLOQUES NEGROS - DISTORSION MUY GRANDE
-				if(distortionAmount >= 0.9 && sizeX > 33){
+				if(distortionAmount >= 0.85 && sizeX > 20){
 					ofSetColor(0, 0, 0, 255);
 							
 					ofDrawRectangle(
@@ -792,8 +762,8 @@ void ofApp::applyGlitchEffect() {
 			}
 			// BLOQUES NEGROS
 			if(ofRandom(1) > 0.7){
-				sizeX = ofRandom(8, 15);
-				sizeY = ofRandom(8, 15);
+				sizeX = ofRandom(8, 15)*distortionAmount;
+				sizeY = ofRandom(8, 15)*distortionAmount;
 					
 				ofSetColor(0, 0, 0, 255);
 				ofDrawRectangle(
@@ -823,6 +793,38 @@ void ofApp::dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje){
 	ofDrawRectangle(xx, yy, ancho_progreso, 20);
 }
 
+void ofApp::dibujarBarraRecorrido(){
+	int xSensor = ofMap(sensor, 0, tam_dial, 0, ofGetWidth()); // valor traducido en x del sensor
+		
+	// fondo barra inferior
+	ofSetColor(50, 60, 70);
+	ofDrawRectangle(0, ofGetHeight()-20, ofGetWidth(), ofGetHeight());
+
+	for (int i = 0; i < cantVideos - 1; i++) {
+		
+		float div = ((float)ofGetWidth() / (float)(cantVideos -2));
+		
+		int xSints = i * div;
+			
+		// marcas de sintonizacion
+		if( abs(xSensor - xSints) < dist_dial/2 ){
+			ofFill(); ofSetColor(190, 195, 200);
+			ofDrawRectangle(xSints-(dist_dial*1.2/2), ofGetHeight()-24, dist_dial*1.2, ofGetHeight());
+				
+			ofDrawBitmapString("0x"+ ofToString(currentVideoIndex) + "aa" + ofToString(distSintVideo) + "c" + ofToString((int) ofMap(distortionAmount, 0, 1, 100, 999)) , xSints-5, ofGetHeight()-30);
+		}
+		else{
+			ofFill(); ofSetColor(150, 160, 180);
+			ofDrawRectangle(xSints-(dist_dial/2), ofGetHeight()-20, dist_dial, ofGetHeight());
+		}
+	}
+	// barra valor sensor
+	ofFill(); ofSetColor(255, (int)ofMap(oscuridad, 0, 240, 255, 5));
+	ofDrawRectangle(xSensor, ofGetHeight()-20, 2, ofGetHeight());
+		
+		
+}
+
 //--------------------------------------------------------------
 void ofApp::keyPressed  (int key){
 
@@ -839,6 +841,7 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y) {
+
 }
 
 //--------------------------------------------------------------
