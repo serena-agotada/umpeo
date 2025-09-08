@@ -122,14 +122,13 @@ ofLog() << "Cargando etiquetas...";
 								if(!label["Instances"].is_null()){
 								    // Access Instances array
 									for (auto& instance : label["Instances"]) {
-										float ins_confidence = instance["Confidence"];
 										
-										if(ins_confidence > 20){
 											RectEtiqueta e;
 											e.id = id;
 											e.name = name;
 											e.timestamp = timestamp;
 											timestamp+=0.015;
+											e.dibujable = true;
 										
 											// Access BoundingBox
 											ofJson bbox = instance["BoundingBox"];
@@ -140,7 +139,7 @@ ofLog() << "Cargando etiquetas...";
 											e.top = bbox["Top"];
 										
 											// Access Instance Confidence
-											e.confidence = ins_confidence;
+											e.confidence = instance["Confidence"];
 											
 											// si no se superpone con la etiqueta anterior
 											bool resuelto = false;
@@ -166,8 +165,15 @@ ofLog() << "Cargando etiquetas...";
 											if(!resuelto) deteccionesEtiquetas[i].push_back(e);
 											//else ofLog() << "resuelto";
 											
-										}
 									}
+								}
+								else{
+									RectEtiqueta e;
+									e.id = id;
+									e.name = name;
+									e.timestamp = timestamp;
+									e.confidence = confidence;
+									e.dibujable = false;
 								}
 						    }
 						}
@@ -384,7 +390,7 @@ void ofApp::draw(){
 		}
 		
 		dibujarBarraRecorrido();
-		dibujarGraficoEtiquetas(0, ofGetHeight()*0.25, offsetVideoPosX, ofGetHeight()*0.65);
+		dibujarGraficoEtiquetas(0, ofGetHeight()*0.18, offsetVideoPosX, ofGetHeight()*0.78);
 		
 	}
 	else{
@@ -425,11 +431,12 @@ void ofApp::dibujarDeteccion(){
 			if(e.confidence > min_conf && e.confidence < min_conf+amp_conf && e.timestamp < videoPlayer.getPosition()+0.03 && e.timestamp > videoPlayer.getPosition()-0.03){
 				
 				if(frame_ids_detectados.empty() || find(frame_ids_detectados.begin(), frame_ids_detectados.end(), e.id) == frame_ids_detectados.end()){
-					deteccionesEtiquetas[currentVideoIndex][i].dibujar(texto, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, offsetVideoPosX, offsetVideoPosY);
+					if(deteccionesEtiquetas[currentVideoIndex][i].dibujable){
+						deteccionesEtiquetas[currentVideoIndex][i].dibujar(texto, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, offsetVideoPosX, offsetVideoPosY);
+						ultimoRectEtiqueta = i;
 					
-					ultimoRectEtiqueta = i;
-					
-					frame_ids_detectados.push_back(e.id);
+						frame_ids_detectados.push_back(e.id);
+					}
 				}
 				
 				bool etiquetaYaGuardada = false;
@@ -463,7 +470,7 @@ void ofApp::dibujarGraficoEtiquetas(int xx, int yy, int ww, int hh){
 	if(!etiquetasDetectadas.empty()){
 		ofSort(etiquetasDetectadas, &compararPorConfidence);
 		
-		//int cant_et = 13;
+		int cant_et = 12;
 		
 		int margen = ww/22;
 		
@@ -472,20 +479,22 @@ void ofApp::dibujarGraficoEtiquetas(int xx, int yy, int ww, int hh){
 		
 		int ancho_barra = hh/32;
 		
+		int alto_refe = (hh - cant_et * (ancho_barra+2)) / cant_et;
+		
 		ofSetColor(50);
 		ofDrawRectangle(margen, yy-margen, ww+margen, hh+margen);
 		
-		for(int i = 0; i < etiquetasDetectadas.size() && i <= 15; i++){
+		for(int i = 0; i < etiquetasDetectadas.size() && i < cant_et; i++){
 			// barra grafico
 			ofSetColor((int)ofMap(etiquetasDetectadas[i].confidence, 0, 60, 255, 0), (int)ofMap(etiquetasDetectadas[i].confidence, 60, 100, 0, 255), (int)ofMap(etiquetasDetectadas[i].confidence, 30, 85, 255, 0));
 			//ofDrawRectangle(xx+i*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, yy+hh*0.5, yy, true), ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, hh*0.5, true));
 			ofDrawRectangle(xx, yy+i*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, ww, true), ancho_barra);
 			
+			
 			// referencias
-			ofDrawRectangle(							 xx, 		yy+10+(hh*0.5)+((hh*0.5)/15)*i, (hh*0.5)/16, (hh*0.5)/16);
+			ofDrawRectangle(							 xx, 		yy + ancho_barra*(cant_et+1) + alto_refe*i, ancho_barra, ancho_barra);
 			ofSetColor(255);
-			texto.drawString(ofToString((int)etiquetasDetectadas[i].confidence), 	 xx*2, 		yy+5+(hh*0.5)+((hh*0.5)/15)*(i+1));
-			texto.drawString(etiquetasDetectadas[i].name,				 xx*4, 		yy+5+(hh*0.5)+((hh*0.5)/15)*(i+1));
+			texto.drawString(etiquetasDetectadas[i].name,				 xx*2.5, 	yy + ancho_barra*(cant_et+1.8) + alto_refe*i);
 		}
 	}
 }

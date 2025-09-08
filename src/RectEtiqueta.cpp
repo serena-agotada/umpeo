@@ -8,6 +8,7 @@ void RectEtiqueta::setup(string nombre, float x, float y, float w, float h, floa
     top = y;
     confidence = conf;
     timestamp = ts;
+    dibujable = false;
 }
 
 void RectEtiqueta::dibujar(ofTrueTypeFont font, float w, float h, int offX, int offY) {

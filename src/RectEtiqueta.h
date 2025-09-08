@@ -8,4 +8,6 @@ struct RectEtiqueta {
     string name;
     float width, height, left, top, confidence, timestamp;
     ofColor color;
+    
+    bool dibujable;
 };
