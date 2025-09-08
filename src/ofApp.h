@@ -13,6 +13,8 @@
 #define PORT 12345
 
 class ofApp : public ofBaseApp{
+	private:
+		static bool compararPorConfidence(RectEtiqueta &a, RectEtiqueta &b);
 
 	public:
 
@@ -26,6 +28,7 @@ class ofApp : public ofBaseApp{
 		void dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje);
 		void dibujarDeteccion();
 		void dibujarBarraRecorrido();
+		void dibujarGraficoEtiquetas(int xx, int yy, int ww, int hh);
 		
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -74,6 +77,7 @@ class ofApp : public ofBaseApp{
 		vector<string> displayEtiquetas;
 		int inicio_linea_corrupta;
 		vector<vector<RectEtiqueta>> deteccionesEtiquetas;
+		vector<RectEtiqueta> etiquetasDetectadas;
 		ofJson js;
 		int ultimoRectEtiqueta;
 		vector<int> frame_ids_detectados;

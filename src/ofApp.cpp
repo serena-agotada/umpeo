@@ -61,7 +61,7 @@ void ofApp::setup(){
 	}
     
 // ETIQUETAS ------------------------------------------------------------------------------	
-ofLog() << "Cargando grilla de etiquetas...";
+ofLog() << "Cargando etiquetas...";
 		// Colores etiquetas
 		ofColor c1 = ofColor::fromHex(0x001f34);
 		ofColor c2 = ofColor::fromHex(0x40c258);
@@ -384,6 +384,7 @@ void ofApp::draw(){
 		}
 		
 		dibujarBarraRecorrido();
+		dibujarGraficoEtiquetas(0, ofGetHeight()/3, offsetVideoPosX, ofGetHeight()/3);
 		
 	}
 	else{
@@ -407,7 +408,7 @@ void ofApp::draw(){
 }
 
 void ofApp::dibujarDeteccion(){
-	if(distortionAmount < 0.25){
+	if(distortionAmount < 0.2){
 		frame_ids_detectados.clear();
 		
 		float min_conf = ofMap(distortionAmount, 0.95, 0, 0, 70, true);
@@ -426,10 +427,54 @@ void ofApp::dibujarDeteccion(){
 					
 					frame_ids_detectados.push_back(e.id);
 				}
+				
+				bool etiquetaYaGuardada = false;
+			
+				for(int i=0; i < etiquetasDetectadas.size(); i++){
+					if(etiquetasDetectadas[i].name == e.name){
+						etiquetasDetectadas[i].timestamp++;
+						etiquetasDetectadas[i].confidence = (etiquetasDetectadas[i].confidence/etiquetasDetectadas[i].timestamp)*(etiquetasDetectadas[i].timestamp-1) + e.confidence/etiquetasDetectadas[i].timestamp;
+						etiquetaYaGuardada = true;
+						break;
+					}
+
+				}
+				if(!etiquetaYaGuardada){
+					RectEtiqueta nEtiqueta;
+					nEtiqueta.name = e.name;
+					nEtiqueta.confidence = e.confidence;
+					nEtiqueta.timestamp = 1;
+					
+					etiquetasDetectadas.push_back(nEtiqueta);
+				}
 			}
 			
 		}
 		
+	}
+}
+
+//--------------------------------------------------------------
+void ofApp::dibujarGraficoEtiquetas(int xx, int yy, int ww, int hh){
+	if(!etiquetasDetectadas.empty()){
+		ofSort(etiquetasDetectadas, &compararPorConfidence);
+		
+		ww = (ww/22)*20;
+		xx = xx + ww/22;
+		
+		int ancho_barra = ww/11;
+		
+		for(int i = 0; i < etiquetasDetectadas.size() && i <= 10; i++){
+			// barra grafico
+			ofSetColor((int)ofMap(etiquetasDetectadas[i].confidence, 0, 50, 255, 0), (int)ofMap(etiquetasDetectadas[i].confidence, 60, 100, 0, 255), (int)ofMap(etiquetasDetectadas[i].confidence, 30, 80, 255, 0));
+			ofDrawRectangle(xx+i*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, yy+hh*0.5, yy, true), ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, hh*0.5, true));
+			
+			// referencias
+			ofDrawRectangle(							 xx+10, 		yy+10+(hh*0.5)+((hh*0.5)/10)*i, (hh*0.5)/11, (hh*0.5)/11);
+			ofSetColor(255);
+			texto.drawString(ofToString((int)etiquetasDetectadas[i].confidence), 	 xx+((hh*0.5)/11)*3, 	yy+10+(hh*0.5)+((hh*0.5)/10)*(i+1));
+			texto.drawString(etiquetasDetectadas[i].name,				 xx+((hh*0.5)/11)*6, 	yy+10+(hh*0.5)+((hh*0.5)/10)*(i+1));
+		}
 	}
 }
 
@@ -726,6 +771,7 @@ void ofApp::applyGlitchEffect() {
     }
 }
 
+//--------------------------------------------------------------
 void ofApp::dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje){
 	ofSetColor(100);
 	ofDrawRectangle(xx, yy, ww, 20);
@@ -735,6 +781,7 @@ void ofApp::dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje){
 	ofDrawRectangle(xx, yy, ancho_progreso, 20);
 }
 
+//--------------------------------------------------------------
 void ofApp::dibujarBarraRecorrido(){
 	int xSensor = ofMap(sensor, 0, tam_dial, 0, ofGetWidth()); // valor traducido en x del sensor
 		
@@ -765,6 +812,11 @@ void ofApp::dibujarBarraRecorrido(){
 	ofDrawRectangle(xSensor, ofGetHeight()-20, 2, ofGetHeight());
 		
 		
+}
+
+
+bool ofApp::compararPorConfidence(RectEtiqueta &a, RectEtiqueta &b) {
+    return a.confidence > b.confidence;
 }
 
 //--------------------------------------------------------------
