@@ -384,7 +384,7 @@ void ofApp::draw(){
 		}
 		
 		dibujarBarraRecorrido();
-		dibujarGraficoEtiquetas(0, ofGetHeight()/3, offsetVideoPosX, ofGetHeight()/3);
+		dibujarGraficoEtiquetas(0, ofGetHeight()*0.25, offsetVideoPosX, ofGetHeight()*0.65);
 		
 	}
 	else{
@@ -394,17 +394,21 @@ void ofApp::draw(){
 		ofDrawBitmapString("CARGANDO MEMORIA", 20, offsetVideoPosY);
 	}
 	
+	int margen = offsetVideoPosX/22;
+	
+	ofSetColor(50);
+	ofDrawRectangle(margen, margen, offsetVideoPosX-margen*2, 105+margen*2);
 	
 	ofSetColor(255);
 	//texto.drawString("Reproduccion: " + ofToString((int)ofGetFrameRate()) , 20, offsetVideoPosY);
 	texto.drawString("Actividad:" + ofToString(ofMap(oscuridad, 0, 240, 100, 0, true)) + "%" , 20, 40);
-	dibujarBarraProgreso(20, 45, offsetVideoPosX-40, ofMap(oscuridad, 0, 240, 100, 0, true));
+	dibujarBarraProgreso(margen*2, 45, offsetVideoPosX-40, ofMap(oscuridad, 0, 240, 100, 0, true));
 	
 	ofSetColor(255);
 	texto.drawString("Fidelidad:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, 100);
-	dibujarBarraProgreso(20, 105, offsetVideoPosX-40, ofMap(distortionAmount, 0, 1, 100, 0, true));
+	dibujarBarraProgreso(margen*2, 105, offsetVideoPosX-40, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
-	ofSetColor(255);
+	//ofSetColor(255);
 }
 
 void ofApp::dibujarDeteccion(){
@@ -459,21 +463,29 @@ void ofApp::dibujarGraficoEtiquetas(int xx, int yy, int ww, int hh){
 	if(!etiquetasDetectadas.empty()){
 		ofSort(etiquetasDetectadas, &compararPorConfidence);
 		
-		ww = (ww/22)*20;
-		xx = xx + ww/22;
+		//int cant_et = 13;
 		
-		int ancho_barra = ww/11;
+		int margen = ww/22;
 		
-		for(int i = 0; i < etiquetasDetectadas.size() && i <= 10; i++){
+		ww = margen*18;
+		xx = xx + margen*2;
+		
+		int ancho_barra = hh/32;
+		
+		ofSetColor(50);
+		ofDrawRectangle(margen, yy-margen, ww+margen, hh+margen);
+		
+		for(int i = 0; i < etiquetasDetectadas.size() && i <= 15; i++){
 			// barra grafico
-			ofSetColor((int)ofMap(etiquetasDetectadas[i].confidence, 0, 50, 255, 0), (int)ofMap(etiquetasDetectadas[i].confidence, 60, 100, 0, 255), (int)ofMap(etiquetasDetectadas[i].confidence, 30, 80, 255, 0));
-			ofDrawRectangle(xx+i*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, yy+hh*0.5, yy, true), ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, hh*0.5, true));
+			ofSetColor((int)ofMap(etiquetasDetectadas[i].confidence, 0, 60, 255, 0), (int)ofMap(etiquetasDetectadas[i].confidence, 60, 100, 0, 255), (int)ofMap(etiquetasDetectadas[i].confidence, 30, 85, 255, 0));
+			//ofDrawRectangle(xx+i*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, yy+hh*0.5, yy, true), ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, hh*0.5, true));
+			ofDrawRectangle(xx, yy+i*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, ww, true), ancho_barra);
 			
 			// referencias
-			ofDrawRectangle(							 xx+10, 		yy+10+(hh*0.5)+((hh*0.5)/10)*i, (hh*0.5)/11, (hh*0.5)/11);
+			ofDrawRectangle(							 xx, 		yy+10+(hh*0.5)+((hh*0.5)/15)*i, (hh*0.5)/16, (hh*0.5)/16);
 			ofSetColor(255);
-			texto.drawString(ofToString((int)etiquetasDetectadas[i].confidence), 	 xx+((hh*0.5)/11)*3, 	yy+10+(hh*0.5)+((hh*0.5)/10)*(i+1));
-			texto.drawString(etiquetasDetectadas[i].name,				 xx+((hh*0.5)/11)*6, 	yy+10+(hh*0.5)+((hh*0.5)/10)*(i+1));
+			texto.drawString(ofToString((int)etiquetasDetectadas[i].confidence), 	 xx*2, 		yy+5+(hh*0.5)+((hh*0.5)/15)*(i+1));
+			texto.drawString(etiquetasDetectadas[i].name,				 xx*4, 		yy+5+(hh*0.5)+((hh*0.5)/15)*(i+1));
 		}
 	}
 }
@@ -773,7 +785,7 @@ void ofApp::applyGlitchEffect() {
 
 //--------------------------------------------------------------
 void ofApp::dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje){
-	ofSetColor(100);
+	ofSetColor(0);
 	ofDrawRectangle(xx, yy, ww, 20);
 	
 	int ancho_progreso = ofMap(porcentaje, 0, 100, 0, ww);
@@ -797,10 +809,10 @@ void ofApp::dibujarBarraRecorrido(){
 			
 		// marcas de sintonizacion
 		if( abs(xSensor - xSints) < dist_dial/2 ){
-			ofFill(); ofSetColor(190, 195, 200);
+			ofFill(); ofSetColor(5, 255, 100);
 			ofDrawRectangle(xSints-(dist_dial*1.2/2), ofGetHeight()-24, dist_dial*1.2, ofGetHeight());
 				
-			ofDrawBitmapString("0x"+ ofToString(currentVideoIndex) + "aa" + ofToString(distSintVideo) + "c" + ofToString((int) ofMap(distortionAmount, 0, 1, 100, 999)) , xSints-5, ofGetHeight()-30);
+			texto.drawString("0x"+ ofToString(currentVideoIndex) + "ae" + ofToString(distSintVideo) + "c" + ofToString((int) ofMap(distortionAmount, 0, 1, 100, 999)) , xSints-5, ofGetHeight()-30);
 		}
 		else{
 			ofFill(); ofSetColor(150, 160, 180);
@@ -809,7 +821,7 @@ void ofApp::dibujarBarraRecorrido(){
 	}
 	// barra valor sensor
 	ofFill(); ofSetColor(255, (int)ofMap(oscuridad, 0, 240, 255, 5));
-	ofDrawRectangle(xSensor, ofGetHeight()-20, 2, ofGetHeight());
+	ofDrawRectangle(xSensor, ofGetHeight()-20, 3, ofGetHeight());
 		
 		
 }
