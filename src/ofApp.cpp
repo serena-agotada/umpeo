@@ -7,9 +7,11 @@ void ofApp::setup(){
 
 	ofSetWindowTitle("run file_analysis()");
 	
-	resizeVideo = 0.99;
+	resizeVideo = 0.75;
 	
 	texto.load("UbuntuMono-Regular.ttf", 14, true, true);
+	
+	ofSetWindowShape(1300, 850);
 
 // VIDEO
 	
@@ -223,7 +225,7 @@ void ofApp::update(){
     
     videoPlayer.update();
     
-    if(videoPlayer.isFrameNew() && videoTexture.isAllocated()) {
+    if(videoPlayer.isFrameNew() && videoPlayer.getTexture().isAllocated()) {
 	    
 	videoTexture = videoPlayer.getTexture();
         
@@ -282,10 +284,14 @@ void ofApp::draw(){
 // ACTUALIZACION DE VIDEO -----------------------------------------------------------------------
 		// solo hago update del video si cambie de indice
 		if (newIndex != currentVideoIndex) {
+			 // Cierra y libera el video anterior completamente
+			videoPlayer.stop();
+			videoPlayer.close();
+			ofSleepMillis(50); // breve pausa para liberar el pipeline
+    
 			//ofLog() << "nuevo indice: " << newIndex;
 			currentVideoIndex = newIndex;
 			
-			//videoPlayer.close();
 			videoPlayer.load(videoFiles[currentVideoIndex]);
 			
 			// Espera a que el video se cargue
@@ -343,31 +349,33 @@ void ofApp::draw(){
 			
 			ofSetColor(255);
 			if(distortionAmount > 0.02){
-				if(fbo.isAllocated() && videoTexture.isAllocated()) {
+				if (distortionAmount > 0.95 && ofRandomuf() < 0.3){
+					ofDrawBitmapString("ERROR DE MEMORIA", offsetVideoPosX + 20, offsetVideoPosY+60);
+					ofSleepMillis(100);
+				}
+				else if(fbo.isAllocated() && videoTexture.isAllocated()) {
 					
 					fbo.draw(offsetVideoPosX, offsetVideoPosY, fbo.getWidth()*resizeVideo, fbo.getHeight()*resizeVideo);
-					//ofDrawBitmapString("Memoria: FBO", 20, offsetVideoPosY+60);
-					
+
 					// Guardar el frame actual como último válido
 					fbo.readToPixels(pixels);
 					lastValidFrame.loadData(pixels);
+
 					
 				} else if(lastValidFrame.isAllocated()) {
 					// Si hay problemas, dibuja el último frame válido
 					lastValidFrame.draw(offsetVideoPosX, offsetVideoPosY, lastValidFrame.getWidth()*resizeVideo, lastValidFrame.getHeight()*resizeVideo);
-					//ofDrawBitmapString("Memoria: UFV", 20, offsetVideoPosY+60);
+
 				}
 				else{
 					videoPlayer.draw(offsetVideoPosX, offsetVideoPosY, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
-					//ofDrawBitmapString("Memoria: VO", 20, offsetVideoPosY+60);
-					
+
 					// Guardar el frame actual como último válido
 					lastValidFrame = videoPlayer.getTexture();
 				}
 			}
 			else{
 				videoPlayer.draw(offsetVideoPosX, offsetVideoPosY, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
-				//ofDrawBitmapString("Memoria: VO", 20, offsetVideoPosY+60);
 				
 				// Guardar el frame actual como último válido
 				lastValidFrame = videoPlayer.getTexture();
@@ -389,7 +397,6 @@ void ofApp::draw(){
 			ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 		}
 		
-		dibujarBarraRecorrido();
 		dibujarGraficoEtiquetas(0, ofGetHeight()*0.18, offsetVideoPosX, ofGetHeight()*0.78);
 		
 	}
@@ -414,15 +421,18 @@ void ofApp::draw(){
 	texto.drawString("Fidelidad:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, 100);
 	dibujarBarraProgreso(margen*2, 105, offsetVideoPosX-40, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
+	dibujarBarraRecorrido();
+	
+	
 	//ofSetColor(255);
 }
 
 void ofApp::dibujarDeteccion(){
-	if(distortionAmount < 0.2){
+	if(distortionAmount < 0.9){
 		frame_ids_detectados.clear();
 		
-		float min_conf = ofMap(distortionAmount, 0.95, 0, 0, 70, true);
-		float amp_conf = ofMap(distortionAmount, 1, 0, 5, 30);
+		float min_conf = ofMap(distortionAmount, 1, 0, 0, 75, true);
+		float amp_conf = ofMap(distortionAmount, 1, 0, 10, 40);
 		
 		for(int i = deteccionesEtiquetas[currentVideoIndex].size()-1; i >= 0 && deteccionesEtiquetas[currentVideoIndex][i].timestamp > videoPlayer.getPosition()-0.35; i--){
 			
@@ -565,14 +575,16 @@ void ofApp::applyGlitchEffect() {
 	
     textoDerecha = "ERRORES\n";
 
-    // Dibujar frame base con una pequeña chance de fallar
-    if(ofRandomuf() > distortionAmount * 0.05f) {
-        videoTexture.draw(0, 0, videoPlayer.getWidth(), videoPlayer.getHeight());
-        textoDerecha += "Base: 0\n";
+    if(distortionAmount > 0.25 && ofRandomuf() < distortionAmount*0.05) {
+	// Saltos de frames
+	float salto = ofRandom(-0.2, 0.2)*distortionAmount;
+	if(videoPlayer.getPosition() + salto > 0 && videoPlayer.getPosition() + salto < 1){
+		videoPlayer.setPosition(videoPlayer.getPosition() + salto);
+	}
+	videoTexture.draw(0, 0, videoPlayer.getWidth(), videoPlayer.getHeight());
     } 
-    else {
+    else if(distortionAmount > 0.05){
 	videoTexture.draw(0, 0, videoPlayer.getWidth(), videoPlayer.getHeight());   
-        textoDerecha += "Base: 1\n";
     }
 
     if(distortionAmount > 0.1f && oscuridad < 200) {
