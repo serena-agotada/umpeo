@@ -41,6 +41,7 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);		
+		float getPosicionSegura();
 
 		// VARIABLES PARA REPRODUCTOR
 		int clip;
@@ -82,6 +83,7 @@ class ofApp : public ofBaseApp{
 		int ultimoRectEtiqueta;
 		vector<int> frame_ids_detectados;
 		ofTrueTypeFont texto;
+		float lastFrameTime;
 
 		ofxOscReceiver receiver;
 };

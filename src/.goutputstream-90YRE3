@@ -7,13 +7,11 @@ void ofApp::setup(){
 
 	ofSetWindowTitle("run file_analysis()");
 	
-	resizeVideo = 0.95;
+	resizeVideo = 0.75;
 	
 	texto.load("UbuntuMono-Regular.ttf", 14, true, true);
 	
-	ofSetWindowShape(1600, 900);
-	
-	lastFrameTime = 0;
+	ofSetWindowShape(1300, 850);
 
 // VIDEO
 	
@@ -50,7 +48,6 @@ void ofApp::setup(){
 		videoPlayer.load(videoFiles[currentVideoIndex]);
 		
 		//videoPlayer.setLoopState(OF_LOOP_NORMAL);
-		videoPlayer.setLoopState(OF_LOOP_NONE);
 		videoPlayer.play();
 		fbo.clear();
 		fbo.allocate(videoPlayer.getWidth(), videoPlayer.getHeight());
@@ -172,18 +169,6 @@ ofLog() << "Cargando etiquetas...";
 											
 									}
 								}
-								else if(confidence <= 100){
-									RectEtiqueta e;
-									e.id = id;
-									e.name = name;
-									e.timestamp = timestamp;
-									e.confidence = confidence;
-									e.width = ofRandom(0.2);
-									e.height = ofRandom(0.2);
-									e.left = ofRandom(1-e.width);
-									e.top = ofRandom(1-e.height);
-									e.dibujable = true;
-								}
 								else{
 									RectEtiqueta e;
 									e.id = id;
@@ -243,39 +228,30 @@ void ofApp::update(){
     if (videoPlayer.getIsMovieDone()) {
 	    videoPlayer.stop();
 	    videoPlayer.setPosition(0);
+	    ofSleepMillis(50); // breve pausa para liberar el pipeline
 	    videoPlayer.play();
     }
+    
+    
+    /*float pos = videoPlayer.getPosition();
+    if (pos < 0.0f || pos > 1.0f || isnan(pos)) {
+	    ofLog() << "fuerzo a 0";
+	pos = 0.0f;
+	videoPlayer.setPosition(0);
+    }*/
 
     
-    if(videoPlayer.isFrameNew()) {
-	    lastFrameTime = ofGetElapsedTimef();
+    if(videoPlayer.isFrameNew() && videoPlayer.getTexture().isAllocated()) {
 	    
-	    if(videoPlayer.getTexture().isAllocated()){
-		videoTexture = videoPlayer.getTexture();
-		
-		fbo.begin();
-		{
-		    applyGlitchEffect();
-		    
-		}
-		fbo.end();
-	    }
+	videoTexture = videoPlayer.getTexture();
+        
+        fbo.begin();
+        {
+            applyGlitchEffect();
+            
+        }
+        fbo.end();
     }
-    
-        if(videoPlayer.isPlaying() && (ofGetElapsedTimef() - lastFrameTime > 1.0f)){
-	    // No hubo frames nuevos en más de 1 segundo -> resync
-	    //ofLogWarning() << "Reiniciando video por falta de frames";
-	    ofSetColor(0);
-	    ofDrawRectangle(offsetVideoPosX, offsetVideoPosY, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo);
-	    ofSetColor(255);
-	    ofDrawCircle(offsetVideoPosX+videoPlayer.getWidth()*resizeVideo/2, offsetVideoPosY+videoPlayer.getHeight()*resizeVideo/2, 50);
-	    ofDrawBitmapString("CARGANDO", offsetVideoPosX + videoPlayer.getWidth()*resizeVideo/2, offsetVideoPosY+videoPlayer.getHeight()*resizeVideo/2+50);
-	    float pos = getPosicionSegura();
-	    videoPlayer.stop();
-	    videoPlayer.setPosition(pos);
-	    videoPlayer.play();
-	    ofSleepMillis(100); // breve pausa
-	}
 
 	// check for waiting messages
 	while(receiver.hasWaitingMessages()){
@@ -313,11 +289,6 @@ void ofApp::update(){
 	offsetVideoPosX = ( (float)(ofGetWidth()) - (float)videoPlayer.getWidth()*resizeVideo);
 	offsetVideoPosY = ( (float)(ofGetHeight()) - (float)videoPlayer.getHeight()*resizeVideo) / 2 - 10;
 	
-	/*ofLogNotice() << "isPlaying: " << videoPlayer.isPlaying()
-              << " | isFrameNew: " << videoPlayer.isFrameNew()
-              << " | pos: " << getPosicionSegura()
-              << " | time: " << ofGetElapsedTimef();*/
-
 }
 
 //--------------------------------------------------------------
@@ -365,11 +336,11 @@ void ofApp::draw(){
 
 		if (videoPlayer.isLoaded()) {
 			// Actualiza la posición si no lo hizo todavía
-			if (shouldSetPosition && getPosicionSegura() < videoPositions[currentVideoIndex]) {
+			if (shouldSetPosition && videoPlayer.getPosition() < videoPositions[currentVideoIndex]) {
 				videoPlayer.setPosition(videoPositions[currentVideoIndex]);
 				
 				//Solo declaro que no hay que cambiar la posición si realmente se actualizó
-				if (getPosicionSegura() == videoPositions[currentVideoIndex]) {
+				if (videoPlayer.getPosition() == videoPositions[currentVideoIndex]) {
 					shouldSetPosition = false;
 				}
 			}
@@ -392,9 +363,9 @@ void ofApp::draw(){
 			
 			ofSetColor(255);
 			if(distortionAmount > 0.02f){
-
-				if (distortionAmount > 0.8f && ofRandomuf() < (ofGetFrameNum()%10)*0.1f*distortionAmount){
-					ofDrawBitmapString("ERROR DE MEMORIA", offsetVideoPosX + videoPlayer.getWidth()*resizeVideo/2.5, offsetVideoPosY+videoPlayer.getHeight()*resizeVideo/2);
+				ofLog() << videoPlayer.getPosition();
+				if (distortionAmount > 0.8f && ofRandomuf() < videoPlayer.getPosition()*distortionAmount*10.0f){
+					ofDrawBitmapString("ERROR DE MEMORIA", offsetVideoPosX + videoPlayer.getWidth()/2, offsetVideoPosY+videoPlayer.getHeight()/2);
 					ofSleepMillis(100);
 				}
 				else if(fbo.isAllocated() && videoTexture.isAllocated()) {
@@ -441,7 +412,7 @@ void ofApp::draw(){
 			ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 		}
 		
-		dibujarGraficoEtiquetas(0, ofGetHeight()*0.19, offsetVideoPosX, ofGetHeight());
+		dibujarGraficoEtiquetas(0, ofGetHeight()*0.18, offsetVideoPosX, ofGetHeight()*0.78);
 		
 	}
 	else{
@@ -454,18 +425,21 @@ void ofApp::draw(){
 	int margen = offsetVideoPosX/22;
 	
 	ofSetColor(50);
-	ofDrawRectangle(0, 0, offsetVideoPosX, 105+margen*2);
+	ofDrawRectangle(margen, margen, offsetVideoPosX-margen*2, 105+margen*2);
 	
 	ofSetColor(255);
+	//texto.drawString("Reproduccion: " + ofToString((int)ofGetFrameRate()) , 20, offsetVideoPosY);
 	texto.drawString("Actividad:" + ofToString(ofMap(oscuridad, 0, 240, 100, 0, true)) + "%" , 20, 40);
-	dibujarBarraProgreso(0, 45, offsetVideoPosX, ofMap(oscuridad, 0, 240, 100, 0, true));
+	dibujarBarraProgreso(margen*2, 45, offsetVideoPosX-40, ofMap(oscuridad, 0, 240, 100, 0, true));
 	
 	ofSetColor(255);
 	texto.drawString("Fidelidad:" + ofToString((int)ofMap(distortionAmount, 0, 1, 100, 0, true)) + "%", 20, 100);
-	dibujarBarraProgreso(0, 105, offsetVideoPosX, ofMap(distortionAmount, 0, 1, 100, 0, true));
+	dibujarBarraProgreso(margen*2, 105, offsetVideoPosX-40, ofMap(distortionAmount, 0, 1, 100, 0, true));
 	
 	dibujarBarraRecorrido();
-
+	
+	
+	//ofSetColor(255);
 }
 
 void ofApp::dibujarDeteccion(){
@@ -475,25 +449,20 @@ void ofApp::dibujarDeteccion(){
 		float min_conf = ofMap(distortionAmount, 1, 0, 0, 75, true);
 		float amp_conf = ofMap(distortionAmount, 1, 0, 10, 40);
 		
-		for(int i = deteccionesEtiquetas[currentVideoIndex].size()-1; i >= 0 && deteccionesEtiquetas[currentVideoIndex][i].timestamp > getPosicionSegura()-0.35; i--){
+		for(int i = deteccionesEtiquetas[currentVideoIndex].size()-1; i >= 0 && deteccionesEtiquetas[currentVideoIndex][i].timestamp > videoPlayer.getPosition()-0.35; i--){
 			
 			RectEtiqueta e = deteccionesEtiquetas[currentVideoIndex][i];
 			
-			if(e.confidence > min_conf && e.confidence < min_conf+amp_conf && e.timestamp < getPosicionSegura()+0.03 && e.timestamp > getPosicionSegura()-0.03){
+			if(e.confidence > min_conf && e.confidence < min_conf+amp_conf && e.timestamp < videoPlayer.getPosition()+0.03 && e.timestamp > videoPlayer.getPosition()-0.03){
 				
-				if(deteccionesEtiquetas[currentVideoIndex][i].dibujable){
-						deteccionesEtiquetas[currentVideoIndex][i].dibujar(texto, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, offsetVideoPosX, offsetVideoPosY);
-						ultimoRectEtiqueta = i;
-				}
-				
-				/*if(frame_ids_detectados.empty() || find(frame_ids_detectados.begin(), frame_ids_detectados.end(), e.id) == frame_ids_detectados.end()){
+				if(frame_ids_detectados.empty() || find(frame_ids_detectados.begin(), frame_ids_detectados.end(), e.id) == frame_ids_detectados.end()){
 					if(deteccionesEtiquetas[currentVideoIndex][i].dibujable){
 						deteccionesEtiquetas[currentVideoIndex][i].dibujar(texto, videoPlayer.getWidth()*resizeVideo, videoPlayer.getHeight()*resizeVideo, offsetVideoPosX, offsetVideoPosY);
 						ultimoRectEtiqueta = i;
 					
 						frame_ids_detectados.push_back(e.id);
 					}
-				}*/
+				}
 				
 				bool etiquetaYaGuardada = false;
 			
@@ -523,39 +492,34 @@ void ofApp::dibujarDeteccion(){
 
 //--------------------------------------------------------------
 void ofApp::dibujarGraficoEtiquetas(int xx, int yy, int ww, int hh){
-	int margen = ww/22;
-	
-	//fondo
-	ofSetColor(50);
-	ofDrawRectangle(0, yy-margen*2, ww, hh);
-	
-	ofSetColor(255);
-	texto.drawString("Objetos encontrados:", xx + margen*2, yy);
-	
 	if(!etiquetasDetectadas.empty()){
 		ofSort(etiquetasDetectadas, &compararPorConfidence);
+		
+		int cant_et = 12;
+		
+		int margen = ww/22;
 		
 		ww = margen*18;
 		xx = xx + margen*2;
 		
 		int ancho_barra = hh/32;
 		
-		int cant_et = hh/ancho_barra - 2;
+		int alto_refe = (hh - cant_et * (ancho_barra+2)) / cant_et;
 		
-		int alto_refe = (hh - cant_et * (ancho_barra+1.5)) / cant_et;
-		
+		ofSetColor(50);
+		ofDrawRectangle(margen, yy-margen, ww+margen, hh+margen);
 		
 		for(int i = 0; i < etiquetasDetectadas.size() && i < cant_et; i++){
 			// barra grafico
 			ofSetColor((int)ofMap(etiquetasDetectadas[i].confidence, 0, 60, 255, 0), (int)ofMap(etiquetasDetectadas[i].confidence, 60, 100, 0, 255), (int)ofMap(etiquetasDetectadas[i].confidence, 30, 85, 255, 0));
-			ofDrawRectangle(xx, yy+(i+1)*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, ww, true), ancho_barra);
-			ofSetColor(255);
-			texto.drawString(etiquetasDetectadas[i].name + " " + ofToString((int)etiquetasDetectadas[i].confidence) + "%",xx+margen, yy + (i+1)*ancho_barra + ancho_barra*0.77);
+			//ofDrawRectangle(xx+i*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, yy+hh*0.5, yy, true), ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, hh*0.5, true));
+			ofDrawRectangle(xx, yy+i*ancho_barra, ofMap(etiquetasDetectadas[i].confidence, 0, 100, 0, ww, true), ancho_barra);
+			
 			
 			// referencias
-			//ofDrawRectangle(				xx, 		yy + ancho_barra*(cant_et+1) + alto_refe*i, ancho_barra, ancho_barra);
-			//ofSetColor(255);
-			//texto.drawString(etiquetasDetectadas[i].name,	 xx*2.5, 	yy + ancho_barra*(cant_et+1.8) + alto_refe*i);
+			ofDrawRectangle(							 xx, 		yy + ancho_barra*(cant_et+1) + alto_refe*i, ancho_barra, ancho_barra);
+			ofSetColor(255);
+			texto.drawString(etiquetasDetectadas[i].name,				 xx*2.5, 	yy + ancho_barra*(cant_et+1.8) + alto_refe*i);
 		}
 	}
 }
@@ -567,12 +531,12 @@ void ofApp::dibujarEtiquetas(int xx, int yy, int w, int h){
 	ofColor color_actual;
 
 	// Setteo el indice de etiqueta en 0 si loopeo el video
-	if(getPosicionSegura() >= 1 || getPosicionSegura() <= 0){
+	if(videoPlayer.getPosition() >= 1 || videoPlayer.getPosition() <= 0){
 		i_etiqueta = 0;
 		pos_prox_etiqueta = etiquetasVideos[currentVideoIndex][i_etiqueta+1].posicion;
 	}
 	// Actualizo el indice de etiqueta si ya tendría que pasar al siguiente
-	else if(getPosicionSegura() >= pos_prox_etiqueta && i_etiqueta < (int)etiquetasVideos[currentVideoIndex].size()){
+	else if(videoPlayer.getPosition() >= pos_prox_etiqueta && i_etiqueta < (int)etiquetasVideos[currentVideoIndex].size()){
 		i_etiqueta++;
 		pos_prox_etiqueta = etiquetasVideos[currentVideoIndex][i_etiqueta+1].posicion;
 	}
@@ -626,14 +590,11 @@ void ofApp::applyGlitchEffect() {
 
     if(distortionAmount > 0.25f && ofRandomuf() < distortionAmount*0.05f) {
 	// Saltos de frames
-	float salto = getPosicionSegura() + ofRandom(-0.2, 0.2) * distortionAmount;
-
-	if (salto < 0.0f || salto > 1.0f || isnan(salto)) {
-	    salto = ofClamp(salto, 0.0f, 1.0f);
+	float salto = videoPlayer.getPosition() + ofRandom(-0.2, 0.2)*distortionAmount;
+	if( salto > 0.0f || salto < 1.0f  || isnan(salto)){
+		salto = 0.0f;
 	}
-
-	videoPlayer.setPosition(salto);
-
+	videoPlayer.setPosition(videoPlayer.getPosition() + salto);
 	
     } 
     videoTexture.draw(0, 0, videoPlayer.getWidth(), videoPlayer.getHeight());
@@ -857,14 +818,10 @@ void ofApp::applyGlitchEffect() {
 
 //--------------------------------------------------------------
 void ofApp::dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje){
-	int m = ww/22;
-	ww = m*18;
-	xx = xx + m*2;
-	
-	ofSetColor(10);
+	ofSetColor(0);
 	ofDrawRectangle(xx, yy, ww, 20);
 	
-	int ancho_progreso = ofMap(porcentaje, 0, 100, 0, ww, true);
+	int ancho_progreso = ofMap(porcentaje, 0, 100, 0, ww);
 	ofSetColor(10, 255, 100);
 	ofDrawRectangle(xx, yy, ancho_progreso, 20);
 }
@@ -905,16 +862,6 @@ void ofApp::dibujarBarraRecorrido(){
 
 bool ofApp::compararPorConfidence(RectEtiqueta &a, RectEtiqueta &b) {
     return a.confidence > b.confidence;
-}
-
-//--------------------------------------------------------------
-float ofApp::getPosicionSegura(){
-	if(videoPlayer.getPosition() > 0 && videoPlayer.getPosition() < 1){
-		return videoPlayer.getPosition();
-	} 
-	else{
-		return ofMap(videoPlayer.getPosition(), -1.0f, -9.0f, 0.0f, 1.0f, true);
-	}
 }
 
 //--------------------------------------------------------------

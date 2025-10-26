@@ -22,12 +22,12 @@ void RectEtiqueta::dibujar(ofTrueTypeFont font, float w, float h, int offX, int 
 	ofNoFill();
 	ofDrawRectangle(left*w+offX, top*h+offY, width*w, height*h);
 	
-	ofRectangle rect = font.getStringBoundingBox(name, 0,0);
+	ofRectangle rect = font.getStringBoundingBox(name + " " + ofToString((int)confidence) + "%", 0,0);
 	ofFill();
 	//ofNoStroke();
 	ofDrawRectangle(left*w+offX, top*h+offY-rect.height+12, rect.width+10, rect.height+10);
 	
 	ofSetColor(255);
-	font.drawString(name, left*w+offX+5, top*h+offY+12);
+	font.drawString(name + " " + ofToString((int)confidence) + "%", left*w+offX+5, top*h+offY+12);
 	//font.drawString(ofToString((int)confidence), left*w+offX+5, top*h+offY+15);
 }
