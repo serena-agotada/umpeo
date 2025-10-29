@@ -27,10 +27,10 @@ void ofApp::setup(){
 
 	// Lista de archivos en el directorio
 	dir.listDir();
-	cantVideos = dir.size();
+	cantVideos = 10;
 	ofLog() << cantVideos;
-	tam_dial = cantVideos * 30;
-	dist_dial = (int) ofGetWidth()/cantVideos/2.5;
+	tam_dial = (cantVideos+1) * 15;
+	
 	videoFiles.reserve(cantVideos);
 	deteccionesEtiquetas.resize(cantVideos);
 	etiquetasVideos.resize(cantVideos);
@@ -311,12 +311,9 @@ void ofApp::update(){
 	}
 	
 	offsetVideoPosX = ( (float)(ofGetWidth()) - (float)videoPlayer.getWidth()*resizeVideo);
-	offsetVideoPosY = ( (float)(ofGetHeight()) - (float)videoPlayer.getHeight()*resizeVideo) / 2 - 10;
+	offsetVideoPosY = 0;
 	
-	/*ofLogNotice() << "isPlaying: " << videoPlayer.isPlaying()
-              << " | isFrameNew: " << videoPlayer.isFrameNew()
-              << " | pos: " << getPosicionSegura()
-              << " | time: " << ofGetElapsedTimef();*/
+	dist_dial = (int) (ofGetWidth()-offsetVideoPosX)/cantVideos;
 
 }
 
@@ -871,33 +868,36 @@ void ofApp::dibujarBarraProgreso(int xx, int yy, int ww, float porcentaje){
 
 //--------------------------------------------------------------
 void ofApp::dibujarBarraRecorrido(){
-	int xSensor = ofMap(sensor, 0, tam_dial, 0, ofGetWidth()); // valor traducido en x del sensor
+	int ancho_barra = ofGetWidth()-offsetVideoPosX;
+	int alto_barra = ofGetHeight()-videoPlayer.getHeight()*resizeVideo;
+	int xSensor = ofMap(sensor, 0, tam_dial, offsetVideoPosX, ancho_barra); // valor traducido en x del sensor
+	float div = ((float)ancho_barra / (float)(cantVideos - 1));
 		
 	// fondo barra inferior
-	ofSetColor(50, 60, 70);
-	ofDrawRectangle(0, ofGetHeight()-20, ofGetWidth(), ofGetHeight());
+	ofSetColor(0);
+	ofDrawRectangle(offsetVideoPosX, ofGetHeight()-alto_barra, ofGetWidth(), alto_barra);
 
-	for (int i = 0; i < cantVideos - 1; i++) {
+	for (int i = 0; i < cantVideos; i++) {
 		
-		float div = ((float)ofGetWidth() / (float)(cantVideos -2));
-		
-		int xSints = i * div;
+		int xSints = offsetVideoPosX + (i * div);
 			
 		// marcas de sintonizacion
-		if( abs(xSensor - xSints) < dist_dial/2 ){
+		if( abs(xSensor - xSints) < div*0.25 ){
+			// verde de sintonizacion
 			ofFill(); ofSetColor(5, 255, 100);
-			ofDrawRectangle(xSints-(dist_dial*1.2/2), ofGetHeight()-24, dist_dial*1.2, ofGetHeight());
+			ofDrawRectangle(xSints-div*0.25, ofGetHeight()-alto_barra, div*0.5, alto_barra);
 				
-			texto.drawString("0x"+ ofToString(currentVideoIndex) + "ae" + ofToString(distSintVideo) + "c" + ofToString((int) ofMap(distortionAmount, 0, 1, 100, 999)) , xSints-5, ofGetHeight()-30);
+			texto.drawString("0x"+ ofToString(currentVideoIndex) + "ae" + ofToString(distSintVideo) + "c" + ofToString((int) ofMap(distortionAmount, 0, 1, 100, 999)) , xSints-5, ofGetHeight()-alto_barra-10);
 		}
 		else{
-			ofFill(); ofSetColor(150, 160, 180);
-			ofDrawRectangle(xSints-(dist_dial/2), ofGetHeight()-20, dist_dial, ofGetHeight());
+			// puntos no sintonizados
+			ofFill(); ofSetColor(180);
+			ofDrawRectangle(xSints-div*0.15, ofGetHeight()-alto_barra, div*0.3, alto_barra);
 		}
 	}
 	// barra valor sensor
-	ofFill(); ofSetColor(255, (int)ofMap(oscuridad, 0, 240, 255, 5));
-	ofDrawRectangle(xSensor, ofGetHeight()-20, 3, ofGetHeight());
+	ofFill(); ofSetColor(255, 0, 0, (int)ofMap(oscuridad, 0, 240, 255, 5));
+	ofDrawRectangle(xSensor, ofGetHeight()-alto_barra, 3, alto_barra);
 		
 		
 }
